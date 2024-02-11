@@ -34,8 +34,8 @@ import {
 } from "cs2-inspect-create"; // or import cs2inspect from "cs2-inspect-create";
 
 const link = generateLink({
-  defindex: itemIds["AK-47"], // 7
-  paintindex: skinIds["Aquamarine Revenge"], // 474
+  defindex: 7,
+  paintindex: 474,
   paintseed: 306,
   paintwear: 0.6336590647697449,
   rarity: Rarity.COVERT, // 5
