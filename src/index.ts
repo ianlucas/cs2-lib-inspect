@@ -4,7 +4,6 @@ import {
 } from "./econ";
 import CRC32 from "crc-32";
 import { Buffer } from "buffer";
-import { itemIds, skinIds, stickerIds } from "../constants";
 
 export enum Rarity {
   STOCK = 0,
@@ -114,8 +113,5 @@ export default {
   generateHex,
   generateLink,
   generateGen,
-  itemIds,
-  skinIds,
-  stickerIds,
 };
-export { generateHex, generateLink, generateGen, itemIds, skinIds, stickerIds };
+export { generateHex, generateLink, generateGen };
