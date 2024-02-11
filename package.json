@@ -1,13 +1,13 @@
 {
-  "name": "cs2-inspect-generator",
+  "name": "cs2-inspect-create",
   "description": "The package provides the ability to create a link to inspect a CS2 item using specified parameters",
-  "homepage": "https://github.com/candyboyz/cs2-inspect-generator",
+  "homepage": "https://github.com/candyboyz/cs2-inspect-create",
   "bugs": {
-    "url": "https://github.com/candyboyz/cs2-inspect-generator/issues"
+    "url": "https://github.com/candyboyz/cs2-inspect-create/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/candyboyz/cs2-inspect-generator.git"
+    "url": "https://github.com/candyboyz/cs2-inspect-create.git"
   },
   "keywords": [
     "csgo",
@@ -20,10 +20,10 @@
     "counter-strike 2",
     "counter strike global offensive",
     "counter-strike global offensive",
-    "cs2-inspect-generator",
-    "cs2-inspect-link-generator",
-    "cs2 inspect generator",
-    "cs2 inspect link generator",
+    "cs2-inspect-create",
+    "cs2-inspect-link-create",
+    "cs2 inspect create",
+    "cs2 inspect link create",
     "cs2 inspect link",
     "cs2 inspect",
     "!gen",
