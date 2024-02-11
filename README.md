@@ -10,11 +10,15 @@ This module is designed to create a link to inspect an item in CS2.
 
 From npm:
 
-`npm install cs2-inspect-create`
+```bash
+npm install cs2-inspect-create
+```
 
 From yarn:
 
-`yarn add cs2-inspect-create`
+```bash
+yarn add cs2-inspect-create
+```
 
 # Usage
 
