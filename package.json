@@ -10,9 +10,9 @@
         "dist/**/*"
     ],
     "scripts": {
-        "build": "tsup --legacy-output",
         "format": "prettier . --write",
-        "genproto": "npx protoc --ts_out src --proto_path protos protos/econ.proto",
+        "prepack": "tsup --legacy-output",
+        "protoc": "npx protoc --ts_out src --proto_path protos protos/econ.proto",
         "test": "jest"
     },
     "dependencies": {
