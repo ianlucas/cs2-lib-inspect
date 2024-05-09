@@ -5,8 +5,7 @@
     "license": "MIT",
     "repository": "ianlucas/cs2-lib-inspect",
     "type": "module",
-    "main": "dist/esm/index.js",
-    "types": "dist/index.d.mts",
+    "main": "dist/index.js",
     "scripts": {
         "format": "prettier . --write",
         "prepack": "([ -d dist ] && rm -rf dist); tsc",
