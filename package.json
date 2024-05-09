@@ -4,15 +4,8 @@
     "description": "A utility for creating inspect links for CS2 items",
     "license": "MIT",
     "repository": "ianlucas/cs2-lib-inspect",
-    "main": "dist/index.js",
-    "module": "dist/esm/index.js",
-    "types": "dist/index.d.ts",
-    "exports": {
-        ".": {
-            "require": "./dist/index.js",
-            "import": "./dist/esm/index.js"
-        }
-    },
+    "main": "dist/esm/index.js",
+    "types": "dist/index.d.mts",
     "files": [
         "dist/**/*"
     ],
