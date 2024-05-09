@@ -2,13 +2,13 @@
 
 > A utility for creating inspect links for CS2 items
 
-## Installing
+## Install
 
 ```bash
 npm install @ianlucas/cs2-lib-inspect
 ```
 
-# Usage
+## Usage
 
 ```typescript
 import { CS_Economy } from "@ianlucas/cs2-lib";
