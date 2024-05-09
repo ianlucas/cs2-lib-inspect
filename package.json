@@ -1,65 +1,39 @@
 {
-  "name": "cs2-inspect-create",
-  "description": "The package provides the ability to create a link to inspect a CS2 item using specified parameters",
-  "homepage": "https://github.com/candyboyz/cs2-inspect-create",
-  "bugs": {
-    "url": "https://github.com/candyboyz/cs2-inspect-create/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/candyboyz/cs2-inspect-create.git"
-  },
-  "keywords": [
-    "csgo",
-    "cs:go",
-    "cs",
-    "cs2",
-    "counter strike",
-    "counter strike 2",
-    "counter-strike",
-    "counter-strike 2",
-    "counter strike global offensive",
-    "counter-strike global offensive",
-    "cs2-inspect-create",
-    "cs2-inspect-link-create",
-    "cs2 inspect create",
-    "cs2 inspect link create",
-    "cs2 inspect link",
-    "cs2 inspect",
-    "!gen",
-    "gen",
-    "valve",
-    "steam"
-  ],
-  "version": "0.0.7",
-  "license": "MIT",
-  "main": "dist/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "require": "./dist/index.js",
-      "import": "./dist/esm/index.js"
+    "name": "@ianlucas/cs2-lib-inspect",
+    "version": "1.0.0",
+    "description": "A utility for creating inspect links for CS2 items",
+    "license": "MIT",
+    "repository": "ianlucas/cs2-lib-inspect",
+    "main": "dist/index.js",
+    "module": "dist/esm/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "require": "./dist/index.js",
+            "import": "./dist/esm/index.js"
+        }
+    },
+    "files": [
+        "dist/**/*"
+    ],
+    "scripts": {
+        "build": "tsup --legacy-output",
+        "format": "prettier . --write",
+        "genproto": "npx protoc --ts_out src --proto_path protos protos/econ.proto",
+        "test": "jest"
+    },
+    "dependencies": {
+        "@protobuf-ts/runtime": "^2.9.4",
+        "buffer": "^6.0.3",
+        "crc-32": "^1.2.2"
+    },
+    "peerDependencies": {
+        "@ianlucas/cs2-lib": "^4.5.0"
+    },
+    "devDependencies": {
+        "@protobuf-ts/plugin": "^2.9.3",
+        "prettier": "^3.2.5",
+        "tsup": "^8.0.1",
+        "typescript": "^5.3.3"
     }
-  },
-  "files": [
-    "dist/**/*"
-  ],
-  "scripts": {
-    "start:ts": "npx ts-node src/index",
-    "build": "tsup --legacy-output",
-    "test": "jest",
-    "protoc": "npx protoc --ts_out src --proto_path protos protos/econ.proto"
-  },
-  "devDependencies": {
-    "@protobuf-ts/plugin": "^2.9.3",
-    "@types/jest": "^29.5.11",
-    "buffer": "^6.0.3",
-    "crc-32": "^1.2.2",
-    "jest": "^29.7.0",
-    "ts-jest": "^29.1.1",
-    "ts-node": "^10.9.2",
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.3"
-  }
 }
