@@ -7,13 +7,10 @@
     "type": "module",
     "main": "dist/esm/index.js",
     "types": "dist/index.d.mts",
-    "files": [
-        "dist/**/*"
-    ],
     "scripts": {
         "format": "prettier . --write",
-        "prepack": "tsup --legacy-output",
-        "protoc": "npx protoc --ts_out src --proto_path protos protos/econ.proto",
+        "prepack": "([ -d dist ] && rm -rf dist); tsc",
+        "protoc": "npx protoc --ts_out src --proto_path src/protos protos/econ.proto",
         "test": "jest"
     },
     "dependencies": {
@@ -27,7 +24,6 @@
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.9.3",
         "prettier": "^3.2.5",
-        "tsup": "^8.0.1",
         "typescript": "^5.3.3"
     }
 }

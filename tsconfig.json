@@ -9,5 +9,6 @@
         "resolveJsonModule": true,
         "strict": true,
         "target": "ESNext"
-    }
+    },
+    "include": ["src/index.ts"]
 }
