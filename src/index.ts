@@ -105,7 +105,6 @@ function getBaseInventoryItemAttributes({
 }
 
 function generateHex(attributes: CEconItemPreviewDataBlock) {
-    console.log(attributes);
     const payload = Buffer.concat([Uint8Array.from([0]), CEconItemPreviewDataBlock.toBinary(attributes)]);
     const crc = CRC32.buf(payload);
     const xCrc = (crc & 0xffff) ^ (CEconItemPreviewDataBlock.toBinary(attributes).byteLength * crc);
