@@ -1,6 +1,2 @@
 node_modules/
 dist/*
-test/*
-yarn.lock
-yarn-error.log
-jest.config.ts
