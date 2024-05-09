@@ -1,6 +1,6 @@
 {
     "name": "@ianlucas/cs2-lib-inspect",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "A utility for creating inspect links for CS2 items",
     "license": "MIT",
     "repository": "ianlucas/cs2-lib-inspect",
