@@ -22,7 +22,7 @@ import {
 } from "@ianlucas/cs2-lib";
 import { Buffer } from "buffer";
 import CRC32 from "crc-32";
-import { CEconItemPreviewDataBlock } from "./econ.js";
+import { CEconItemPreviewDataBlock } from "./econ-item-preview-data-block.js";
 
 const CS_RARITY_INT: Record<string, number | undefined> = {
     [CS_RARITY_COMMON_COLOR]: 1,

@@ -1,4 +1,4 @@
 dist
 node_modules
-protos
 src/econ.ts
+src/protos
