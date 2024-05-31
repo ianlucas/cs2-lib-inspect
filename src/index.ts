@@ -4,34 +4,25 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-    CS_BaseInventoryItem,
-    CS_Economy,
-    CS_InventoryItem,
-    CS_Item,
-    CS_MIN_SEED,
-    CS_MIN_STICKER_WEAR,
-    CS_MIN_WEAR,
-    CS_NONE,
-    CS_RARITY_ANCIENT_COLOR,
-    CS_RARITY_COMMON_COLOR,
-    CS_RARITY_IMMORTAL_COLOR,
-    CS_RARITY_LEGENDARY_COLOR,
-    CS_RARITY_MYTHICAL_COLOR,
-    CS_RARITY_RARE_COLOR,
-    CS_RARITY_UNCOMMON_COLOR
+    CS2EconomyItem,
+    CS2InventoryItem,
+    CS2RarityColor,
+    CS2_MIN_SEED,
+    CS2_MIN_STICKER_WEAR,
+    CS2_MIN_WEAR
 } from "@ianlucas/cs2-lib";
 import { Buffer } from "buffer";
 import CRC32 from "crc-32";
 import { CEconItemPreviewDataBlock } from "./econ-item-preview-data-block.js";
 
-const CS_RARITY_INT: Record<string, number | undefined> = {
-    [CS_RARITY_COMMON_COLOR]: 1,
-    [CS_RARITY_UNCOMMON_COLOR]: 2,
-    [CS_RARITY_RARE_COLOR]: 3,
-    [CS_RARITY_MYTHICAL_COLOR]: 4,
-    [CS_RARITY_LEGENDARY_COLOR]: 5,
-    [CS_RARITY_ANCIENT_COLOR]: 6,
-    [CS_RARITY_IMMORTAL_COLOR]: 7
+const CS2_RARITY_INT: Record<string, number | undefined> = {
+    [CS2RarityColor.Common]: 1,
+    [CS2RarityColor.Uncommon]: 2,
+    [CS2RarityColor.Rare]: 3,
+    [CS2RarityColor.Mythical]: 4,
+    [CS2RarityColor.Legendary]: 5,
+    [CS2RarityColor.Ancient]: 6,
+    [CS2RarityColor.Immortal]: 7
 };
 
 const MISSING_ITEM_DEF: Record<string, number | undefined> = {
@@ -41,7 +32,7 @@ const MISSING_ITEM_DEF: Record<string, number | undefined> = {
     musickit: 1314
 };
 
-export const CS_PREVIEW_URL = "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20";
+export const CS2_PREVIEW_URL = "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20";
 
 function floatToBytes(floatValue: number) {
     const floatArray = new Float32Array(1);
@@ -50,17 +41,17 @@ function floatToBytes(floatValue: number) {
     return byteArray[0];
 }
 
-function getItemAttributes(item: CS_Item): CEconItemPreviewDataBlock {
-    const { def, index, rarity, type, tint, wearmin } = item;
+function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBlock {
+    const { def, index, rarity, type, tint, wearMin } = item;
     const hasStickerObject = MISSING_ITEM_DEF[type] !== undefined;
     const hasPaintIndex = !hasStickerObject && type !== "musickit";
     return {
         defindex: MISSING_ITEM_DEF[type] ?? def,
         musicindex: type === "musickit" ? index : undefined,
         paintindex: hasPaintIndex ? index : undefined,
-        paintseed: CS_Economy.hasSeed(item) ? CS_MIN_SEED : undefined,
-        paintwear: CS_Economy.hasWear(item) ? wearmin ?? CS_MIN_WEAR : undefined,
-        rarity: CS_RARITY_INT[rarity] ?? 0,
+        paintseed: item.hasSeed() ? CS2_MIN_SEED : undefined,
+        paintwear: item.hasWear() ? wearMin ?? CS2_MIN_WEAR : undefined,
+        rarity: CS2_RARITY_INT[rarity] ?? 0,
         stickers: hasStickerObject
             ? [
                   {
@@ -73,33 +64,23 @@ function getItemAttributes(item: CS_Item): CEconItemPreviewDataBlock {
     };
 }
 
-function getBaseInventoryItemAttributes({
-    id,
-    nametag,
-    seed,
-    stattrak,
-    stickers,
-    stickerswear,
-    wear
-}: CS_BaseInventoryItem): CEconItemPreviewDataBlock {
-    const item = CS_Economy.getById(id);
-    const baseAttributes = getItemAttributes(item);
+function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDataBlock {
+    const { nameTag, seed, statTrak, stickers, wear } = item;
+    const baseAttributes = getEconomyItemPreviewData(item);
     return {
         ...baseAttributes,
-        customname: nametag,
-        killeaterscoretype: stattrak !== undefined ? 0 : undefined,
-        killeatervalue: stattrak,
-        paintseed: CS_Economy.hasSeed(item) ? seed ?? CS_MIN_SEED : undefined,
-        paintwear: CS_Economy.hasWear(item) ? floatToBytes(wear ?? item.wearmin ?? CS_MIN_WEAR) : undefined,
+        customname: nameTag,
+        killeaterscoretype: statTrak !== undefined ? 0 : undefined,
+        killeatervalue: statTrak,
+        paintseed: item.hasSeed() ? seed ?? CS2_MIN_SEED : undefined,
+        paintwear: item.hasWear() ? floatToBytes(wear ?? item.wearMin ?? CS2_MIN_WEAR) : undefined,
         stickers:
             stickers !== undefined
-                ? stickers
-                      .map((sticker, slot) => ({
-                          slot,
-                          stickerId: CS_Economy.getById(sticker).index,
-                          wear: stickerswear?.[slot] ?? CS_MIN_STICKER_WEAR
-                      }))
-                      .filter(({ stickerId }) => stickerId !== CS_NONE)
+                ? item.someStickers().map(([slot, { id, wear }]) => ({
+                      slot,
+                      stickerId: item.economy.getById(id).index,
+                      wear: wear ?? CS2_MIN_STICKER_WEAR
+                  }))
                 : baseAttributes.stickers
     };
 }
@@ -114,11 +95,8 @@ function generateHex(attributes: CEconItemPreviewDataBlock) {
     return buffer.toString("hex").toUpperCase();
 }
 
-export function CS_generateInspectLink(item: CS_Item | CS_BaseInventoryItem | CS_InventoryItem) {
-    const econ: CEconItemPreviewDataBlock = {
-        ...(typeof (item as any).uid === undefined
-            ? getItemAttributes(item as CS_Item)
-            : getBaseInventoryItemAttributes(item as CS_BaseInventoryItem))
-    };
-    return `${CS_PREVIEW_URL}${generateHex(econ)}`;
+export function generateInspectLink(item: CS2EconomyItem | CS2InventoryItem) {
+    return `${CS2_PREVIEW_URL}${generateHex(
+        item instanceof CS2InventoryItem ? getInventoryItemPreviewData(item) : getEconomyItemPreviewData(item)
+    )}`;
 }
