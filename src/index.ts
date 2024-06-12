@@ -6,16 +6,17 @@
 import {
     CS2EconomyItem,
     CS2InventoryItem,
+    CS2ItemType,
+    CS2ItemTypeValues,
     CS2RarityColor,
     CS2_MIN_SEED,
-    CS2_MIN_STICKER_WEAR,
-    CS2_MIN_WEAR
+    CS2_MIN_STICKER_WEAR
 } from "@ianlucas/cs2-lib";
 import { Buffer } from "buffer";
 import CRC32 from "crc-32";
 import { CEconItemPreviewDataBlock } from "./econ-item-preview-data-block.js";
 
-const CS2_RARITY_INT: Record<string, number | undefined> = {
+export const CS2PreviewRarity = {
     [CS2RarityColor.Common]: 1,
     [CS2RarityColor.Uncommon]: 2,
     [CS2RarityColor.Rare]: 3,
@@ -25,12 +26,25 @@ const CS2_RARITY_INT: Record<string, number | undefined> = {
     [CS2RarityColor.Immortal]: 7
 };
 
-const MISSING_ITEM_DEF: Record<string, number | undefined> = {
-    graffiti: 1348,
-    patch: 4609,
-    sticker: 1209,
-    musickit: 1314
-};
+export const CS2_PREVIEW_HAS_STICKERS: CS2ItemTypeValues[] = [
+    CS2ItemType.Graffiti,
+    CS2ItemType.Patch,
+    CS2ItemType.Sticker,
+    CS2ItemType.MusicKit
+];
+
+export const CS2_PREVIEW_INSPECTABLE_ITEMS: CS2ItemTypeValues[] = [
+    CS2ItemType.Agent,
+    CS2ItemType.Container,
+    CS2ItemType.Collectible,
+    CS2ItemType.Gloves,
+    CS2ItemType.Graffiti,
+    CS2ItemType.Melee,
+    CS2ItemType.MusicKit,
+    CS2ItemType.Patch,
+    CS2ItemType.Sticker,
+    CS2ItemType.Weapon
+];
 
 export const CS2_PREVIEW_URL = "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20";
 
@@ -42,17 +56,17 @@ function floatToBytes(floatValue: number) {
 }
 
 function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBlock {
-    const { def, index, rarity, type, tint, wearMin } = item;
-    const hasStickerObject = MISSING_ITEM_DEF[type] !== undefined;
-    const hasPaintIndex = !hasStickerObject && type !== "musickit";
+    const { def, index, rarity, type, tint } = item;
+    const hasStickers = CS2_PREVIEW_HAS_STICKERS.includes(type);
+    const hasPaintIndex = !hasStickers && !item.isMusicKit();
     return {
-        defindex: MISSING_ITEM_DEF[type] ?? def,
-        musicindex: type === "musickit" ? index : undefined,
+        defindex: def,
+        musicindex: item.isMusicKit() ? index : undefined,
         paintindex: hasPaintIndex ? index : undefined,
         paintseed: item.hasSeed() ? CS2_MIN_SEED : undefined,
-        paintwear: item.hasWear() ? wearMin ?? CS2_MIN_WEAR : undefined,
-        rarity: CS2_RARITY_INT[rarity] ?? 0,
-        stickers: hasStickerObject
+        paintwear: item.hasWear() ? item.getMinimumWear() : undefined,
+        rarity: CS2PreviewRarity[rarity] ?? 0,
+        stickers: hasStickers
             ? [
                   {
                       tintId: tint,
@@ -65,7 +79,7 @@ function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBl
 }
 
 function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDataBlock {
-    const { nameTag, seed, statTrak, stickers, wear } = item;
+    const { nameTag, seed, statTrak, stickers } = item;
     const baseAttributes = getEconomyItemPreviewData(item);
     return {
         ...baseAttributes,
@@ -73,7 +87,7 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
         killeaterscoretype: statTrak !== undefined ? 0 : undefined,
         killeatervalue: statTrak,
         paintseed: item.hasSeed() ? seed ?? CS2_MIN_SEED : undefined,
-        paintwear: item.hasWear() ? floatToBytes(wear ?? item.wearMin ?? CS2_MIN_WEAR) : undefined,
+        paintwear: item.hasWear() ? floatToBytes(item.getWear()) : undefined,
         stickers:
             stickers !== undefined
                 ? item.someStickers().map(([slot, { id, wear }]) => ({

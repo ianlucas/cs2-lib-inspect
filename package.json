@@ -18,7 +18,7 @@
         "crc-32": "^1.2.2"
     },
     "peerDependencies": {
-        "@ianlucas/cs2-lib": "^5.0.0-rc.7"
+        "@ianlucas/cs2-lib": "^5.0.0-rc.19"
     },
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.9.3",
