@@ -1,6 +1,6 @@
 {
     "name": "@ianlucas/cs2-lib-inspect",
-    "version": "2.0.0-rc.2",
+    "version": "2.0.0-rc.3",
     "description": "A utility for creating inspect links for CS2 items",
     "license": "MIT",
     "repository": "ianlucas/cs2-lib-inspect",
@@ -18,7 +18,7 @@
         "crc-32": "^1.2.2"
     },
     "peerDependencies": {
-        "@ianlucas/cs2-lib": "^5.0.0-rc.19"
+        "@ianlucas/cs2-lib": "^5.0.0-rc.24"
     },
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.9.3",
