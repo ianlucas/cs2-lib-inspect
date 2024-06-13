@@ -79,7 +79,7 @@ function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBl
 }
 
 function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDataBlock {
-    const { nameTag, seed, statTrak, stickers } = item;
+    const { nameTag, seed, statTrak, stickers, patches } = item;
     const baseAttributes = getEconomyItemPreviewData(item);
     return {
         ...baseAttributes,
@@ -95,7 +95,12 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                       stickerId: item.economy.getById(id).index,
                       wear: wear ?? CS2_MIN_STICKER_WEAR
                   }))
-                : baseAttributes.stickers
+                : patches !== undefined
+                  ? item.somePatches().map(([slot, patchId]) => ({
+                        slot,
+                        stickerId: item.economy.getById(patchId).index
+                    }))
+                  : baseAttributes.stickers
     };
 }
 
