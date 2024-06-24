@@ -91,8 +91,8 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
         stickers:
             stickers !== undefined
                 ? item.someStickers().map(([slot, { id, wear, x, y }]) => ({
-                      offsetX: x,
-                      offsetY: y,
+                      offsetX: x !== undefined ? floatToBytes(x) : undefined,
+                      offsetY: y !== undefined ? floatToBytes(y) : undefined,
                       slot,
                       stickerId: item.economy.getById(id).index,
                       wear: wear ?? CS2_MIN_STICKER_WEAR
