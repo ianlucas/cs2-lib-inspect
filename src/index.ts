@@ -64,7 +64,7 @@ function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBl
         musicindex: item.isMusicKit() ? index : undefined,
         paintindex: hasPaintIndex ? index : undefined,
         paintseed: item.hasSeed() ? CS2_MIN_SEED : undefined,
-        paintwear: item.hasWear() ? item.getMinimumWear() : undefined,
+        paintwear: item.hasWear() ? floatToBytes(item.getMinimumWear()) : undefined,
         rarity: CS2PreviewRarity[rarity] ?? 0,
         stickers: hasStickers
             ? [
@@ -91,8 +91,8 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
         stickers:
             stickers !== undefined
                 ? item.someStickers().map(([slot, { id, wear, x, y }]) => ({
-                      offsetX: x !== undefined ? floatToBytes(x) : undefined,
-                      offsetY: y !== undefined ? floatToBytes(y) : undefined,
+                      offsetX: x,
+                      offsetY: y,
                       slot,
                       stickerId: item.economy.getById(id).index,
                       wear: wear ?? CS2_MIN_STICKER_WEAR

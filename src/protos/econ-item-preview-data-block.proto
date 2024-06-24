@@ -10,8 +10,8 @@ message CEconItemPreviewDataBlock {
 		optional float scale = 4;
 		optional float rotation = 5;
 		optional uint32 tint_id = 6;
-		optional uint32 offset_x = 7;
-		optional uint32 offset_y = 8;
+		optional float offset_x = 7;
+		optional float offset_y = 8;
 	}
 
 	optional uint32 accountid = 1;
@@ -32,4 +32,5 @@ message CEconItemPreviewDataBlock {
 	optional uint32 dropreason = 16;
 	optional uint32 musicindex = 17;
 	optional int32 entindex = 18;
+	optional uint32 petindex = 19;
 }

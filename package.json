@@ -9,7 +9,7 @@
     "scripts": {
         "format": "prettier . --write",
         "prepack": "([ -d dist ] && rm -rf dist); tsc",
-        "protoc": "npx protoc --ts_out src --proto_path src/protos protos/econ.proto",
+        "protoc": "npx protoc --ts_out ./src --proto_path src/protos src/protos/econ-item-preview-data-block.proto",
         "test": "jest"
     },
     "dependencies": {
