@@ -90,7 +90,9 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
         paintwear: item.hasWear() ? floatToBytes(item.getWear()) : undefined,
         stickers:
             stickers !== undefined
-                ? item.someStickers().map(([slot, { id, wear }]) => ({
+                ? item.someStickers().map(([slot, { id, wear, x, y }]) => ({
+                      offsetX: x,
+                      offsetY: y,
                       slot,
                       stickerId: item.economy.getById(id).index,
                       wear: wear ?? CS2_MIN_STICKER_WEAR
