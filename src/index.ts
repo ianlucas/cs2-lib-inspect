@@ -14,7 +14,7 @@ import {
 } from "@ianlucas/cs2-lib";
 import { Buffer } from "buffer";
 import CRC32 from "crc-32";
-import { CEconItemPreviewDataBlock } from "./econ-item-preview-data-block.js";
+import { CEconItemPreviewDataBlock } from "./Protobufs/cstrike15_gcmessages.js";
 
 export const CS2PreviewRarity = {
     [CS2RarityColor.Common]: 1,
@@ -61,6 +61,7 @@ function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBl
     const hasPaintIndex = !hasStickers && !item.isMusicKit();
     return {
         defindex: def,
+        keychains: [],
         musicindex: item.isMusicKit() ? index : undefined,
         paintindex: hasPaintIndex ? index : undefined,
         paintseed: item.hasSeed() ? CS2_MIN_SEED : undefined,

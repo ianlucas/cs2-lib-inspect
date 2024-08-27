@@ -3,6 +3,5 @@
 .gitignore
 .prettierignore
 .prettierrc
-README.md
 src
 tsconfig.json

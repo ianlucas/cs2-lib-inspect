@@ -33,4 +33,5 @@ message CEconItemPreviewDataBlock {
 	optional uint32 musicindex = 17;
 	optional int32 entindex = 18;
 	optional uint32 petindex = 19;
+	repeated .CEconItemPreviewDataBlock.Sticker keychains = 20;
 }

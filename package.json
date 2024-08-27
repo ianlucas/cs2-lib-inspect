@@ -1,6 +1,6 @@
 {
     "name": "@ianlucas/cs2-lib-inspect",
-    "description": "A utility for creating inspect links for CS2 items",
+    "description": "An extension for cs2-lib to create Counter-Strike 2 inspect links",
     "license": "MIT",
     "repository": "ianlucas/cs2-lib-inspect",
     "type": "module",
@@ -8,8 +8,8 @@
     "scripts": {
         "docs": "typedoc --out docs src/index.ts",
         "format": "prettier . --write",
+        "generate:protobufs": "npx protoc --ts_out ./src/Protobufs --proto_path src/Protobufs src/Protobufs/cstrike15_gcmessages.proto",
         "prepack": "([ -d dist ] && rm -rf dist); tsc",
-        "protoc": "npx protoc --ts_out ./src --proto_path src/protos src/protos/econ-item-preview-data-block.proto",
         "upgrade": "npx npm-check-updates@latest --target minor -u"
     },
     "dependencies": {
