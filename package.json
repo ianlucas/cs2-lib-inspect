@@ -10,7 +10,7 @@
         "format": "prettier . --write",
         "prepack": "([ -d dist ] && rm -rf dist); tsc",
         "protoc": "npx protoc --ts_out ./src --proto_path src/protos src/protos/econ-item-preview-data-block.proto",
-        "test": "jest"
+        "upgrade": "npx npm-check-updates@latest --target minor -u"
     },
     "dependencies": {
         "@protobuf-ts/runtime": "^2.9.4",
@@ -21,9 +21,9 @@
         "@ianlucas/cs2-lib": "^5.0.0"
     },
     "devDependencies": {
-        "@protobuf-ts/plugin": "^2.9.3",
-        "prettier": "^3.2.5",
+        "@protobuf-ts/plugin": "^2.9.4",
+        "prettier": "^3.3.3",
         "typedoc": "^0.26.6",
-        "typescript": "^5.3.3"
+        "typescript": "^5.5.4"
     }
 }
