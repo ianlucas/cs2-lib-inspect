@@ -1,12 +1,12 @@
 {
     "name": "@ianlucas/cs2-lib-inspect",
-    "version": "2.0.0",
     "description": "A utility for creating inspect links for CS2 items",
     "license": "MIT",
     "repository": "ianlucas/cs2-lib-inspect",
     "type": "module",
     "main": "dist/index.js",
     "scripts": {
+        "docs": "typedoc --out docs src/index.ts",
         "format": "prettier . --write",
         "prepack": "([ -d dist ] && rm -rf dist); tsc",
         "protoc": "npx protoc --ts_out ./src --proto_path src/protos src/protos/econ-item-preview-data-block.proto",
@@ -23,6 +23,7 @@
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.9.3",
         "prettier": "^3.2.5",
+        "typedoc": "^0.26.6",
         "typescript": "^5.3.3"
     }
 }
