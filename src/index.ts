@@ -47,6 +47,7 @@ export const CS2_PREVIEW_INSPECTABLE_ITEMS: CS2ItemTypeValues[] = [
 ];
 
 export const CS2_PREVIEW_URL = "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20";
+export const CS2_PREVIEW_COMMAND = "csgo_econ_action_preview";
 
 function floatToBytes(floatValue: number) {
     const floatArray = new Float32Array(1);
@@ -87,7 +88,7 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
         customname: nameTag,
         killeaterscoretype: statTrak !== undefined ? 0 : undefined,
         killeatervalue: statTrak,
-        paintseed: item.hasSeed() ? seed ?? CS2_MIN_SEED : undefined,
+        paintseed: item.hasSeed() ? (seed ?? CS2_MIN_SEED) : undefined,
         paintwear: item.hasWear() ? floatToBytes(item.getWear()) : undefined,
         stickers:
             stickers !== undefined
@@ -118,7 +119,16 @@ function generateHex(attributes: CEconItemPreviewDataBlock) {
 }
 
 export function generateInspectLink(item: CS2EconomyItem | CS2InventoryItem) {
-    return `${CS2_PREVIEW_URL}${generateHex(
+    const hex = generateHex(
         item instanceof CS2InventoryItem ? getInventoryItemPreviewData(item) : getEconomyItemPreviewData(item)
-    )}`;
+    );
+    // There's a char limit for launching the game using the steam:// protocol.
+    if (CS2_PREVIEW_URL.length + hex.length > 300) {
+        return `${CS2_PREVIEW_COMMAND} ${hex}`;
+    }
+    return `${CS2_PREVIEW_URL}${hex}`;
+}
+
+export function isCommandInspect(inspectLink: string) {
+    return inspectLink.startsWith(CS2_PREVIEW_COMMAND);
 }
