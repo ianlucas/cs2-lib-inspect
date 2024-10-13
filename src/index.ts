@@ -130,5 +130,5 @@ export function generateInspectLink(item: CS2EconomyItem | CS2InventoryItem) {
 }
 
 export function isCommandInspect(inspectLink: string) {
-    return inspectLink.startsWith(CS2_PREVIEW_COMMAND);
+    return inspectLink.startsWith(CS2_PREVIEW_URL);
 }
