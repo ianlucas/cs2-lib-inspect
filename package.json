@@ -22,8 +22,8 @@
     },
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.9.4",
-        "prettier": "^3.3.3",
-        "typedoc": "^0.26.6",
-        "typescript": "^5.5.4"
+        "prettier": "^3.4.2",
+        "typedoc": "^0.27.5",
+        "typescript": "^5.7.2"
     }
 }
