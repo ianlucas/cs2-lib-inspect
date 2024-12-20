@@ -10,6 +10,7 @@
         "format": "prettier . --write",
         "generate:protobufs": "npx protoc --ts_out ./src/Protobufs --proto_path src/Protobufs src/Protobufs/cstrike15_gcmessages.proto",
         "prepack": "([ -d dist ] && rm -rf dist); tsc",
+        "typecheck": "tsc --noEmit",
         "upgrade": "npx npm-check-updates@latest --target minor -u"
     },
     "dependencies": {
@@ -22,6 +23,7 @@
     },
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.9.4",
+        "@total-typescript/tsconfig": "^1.0.4",
         "prettier": "^3.4.2",
         "typedoc": "^0.27.5",
         "typescript": "^5.7.2"
