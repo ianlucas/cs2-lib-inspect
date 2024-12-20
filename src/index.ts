@@ -7,7 +7,7 @@ import {
     CS2EconomyItem,
     CS2InventoryItem,
     CS2ItemType,
-    CS2ItemTypeValues,
+    type CS2ItemTypeValues,
     CS2RarityColor,
     CS2_MIN_SEED,
     CS2_MIN_STICKER_WEAR
