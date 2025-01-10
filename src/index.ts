@@ -104,7 +104,13 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                         slot,
                         stickerId: item.economy.getById(patchId).index
                     }))
-                  : baseAttributes.stickers
+                  : baseAttributes.stickers,
+        keychains:
+            item.keychain !== undefined ? [{
+                offsetX: item.keychain.x,
+                offsetY: item.keychain.y,
+                stickerId: item.economy.getById(item.keychain.id).index,
+            }] : baseAttributes.keychains
     };
 }
 
