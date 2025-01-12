@@ -28,17 +28,18 @@ export const CS2PreviewRarity = {
 
 export const CS2_PREVIEW_HAS_STICKERS: CS2ItemTypeValues[] = [
     CS2ItemType.Graffiti,
+    CS2ItemType.MusicKit,
     CS2ItemType.Patch,
-    CS2ItemType.Sticker,
-    CS2ItemType.MusicKit
+    CS2ItemType.Sticker
 ];
 
 export const CS2_PREVIEW_INSPECTABLE_ITEMS: CS2ItemTypeValues[] = [
     CS2ItemType.Agent,
-    CS2ItemType.Container,
     CS2ItemType.Collectible,
+    CS2ItemType.Container,
     CS2ItemType.Gloves,
     CS2ItemType.Graffiti,
+    CS2ItemType.Keychain,
     CS2ItemType.Melee,
     CS2ItemType.MusicKit,
     CS2ItemType.Patch,
@@ -60,9 +61,17 @@ function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBl
     const { def, index, rarity, type, tint } = item;
     const hasStickers = CS2_PREVIEW_HAS_STICKERS.includes(type);
     const hasPaintIndex = !hasStickers && !item.isMusicKit();
+    const hasKeychains = item.isKeychain();
     return {
         defindex: def,
-        keychains: [],
+        keychains: hasKeychains
+            ? [
+                  {
+                      stickerId: index,
+                      slot: 0
+                  }
+              ]
+            : [],
         musicindex: item.isMusicKit() ? index : undefined,
         paintindex: hasPaintIndex ? index : undefined,
         paintseed: item.hasSeed() ? CS2_MIN_SEED : undefined,
@@ -114,7 +123,12 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                       slot,
                       stickerId: item.economy.getById(id).index
                   }))
-                : baseAttributes.keychains
+                : item.isKeychain()
+                  ? baseAttributes.keychains.map((keychain) => {
+                        keychain.pattern = seed;
+                        return keychain;
+                    })
+                  : baseAttributes.keychains
     };
 }
 
@@ -129,9 +143,9 @@ function generateHex(attributes: CEconItemPreviewDataBlock) {
 }
 
 export function generateInspectLink(item: CS2EconomyItem | CS2InventoryItem) {
-    const hex = generateHex(
-        item instanceof CS2InventoryItem ? getInventoryItemPreviewData(item) : getEconomyItemPreviewData(item)
-    );
+    const attributes =
+        item instanceof CS2InventoryItem ? getInventoryItemPreviewData(item) : getEconomyItemPreviewData(item);
+    const hex = generateHex(attributes);
     // There's a char limit for launching the game using the steam:// protocol.
     if (CS2_PREVIEW_URL.length + hex.length > 300) {
         return `${CS2_PREVIEW_COMMAND} ${hex}`;
