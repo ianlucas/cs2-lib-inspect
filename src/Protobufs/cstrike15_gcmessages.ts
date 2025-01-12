@@ -133,6 +133,14 @@ export interface CEconItemPreviewDataBlock_Sticker {
      * @generated from protobuf field: optional float offset_y = 8;
      */
     offsetY?: number;
+    /**
+     * @generated from protobuf field: optional float offset_z = 9;
+     */
+    offsetZ?: number;
+    /**
+     * @generated from protobuf field: optional uint32 pattern = 10;
+     */
+    pattern?: number;
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class CEconItemPreviewDataBlock$Type extends MessageType<CEconItemPreviewDataBlock> {
@@ -326,7 +334,9 @@ class CEconItemPreviewDataBlock_Sticker$Type extends MessageType<CEconItemPrevie
             { no: 5, name: "rotation", kind: "scalar", opt: true, T: 2 /*ScalarType.FLOAT*/ },
             { no: 6, name: "tint_id", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ },
             { no: 7, name: "offset_x", kind: "scalar", opt: true, T: 2 /*ScalarType.FLOAT*/ },
-            { no: 8, name: "offset_y", kind: "scalar", opt: true, T: 2 /*ScalarType.FLOAT*/ }
+            { no: 8, name: "offset_y", kind: "scalar", opt: true, T: 2 /*ScalarType.FLOAT*/ },
+            { no: 9, name: "offset_z", kind: "scalar", opt: true, T: 2 /*ScalarType.FLOAT*/ },
+            { no: 10, name: "pattern", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ }
         ]);
     }
     create(value?: PartialMessage<CEconItemPreviewDataBlock_Sticker>): CEconItemPreviewDataBlock_Sticker {
@@ -364,6 +374,12 @@ class CEconItemPreviewDataBlock_Sticker$Type extends MessageType<CEconItemPrevie
                 case /* optional float offset_y */ 8:
                     message.offsetY = reader.float();
                     break;
+                case /* optional float offset_z */ 9:
+                    message.offsetZ = reader.float();
+                    break;
+                case /* optional uint32 pattern */ 10:
+                    message.pattern = reader.uint32();
+                    break;
                 default:
                     let u = options.readUnknownField;
                     if (u === "throw")
@@ -400,6 +416,12 @@ class CEconItemPreviewDataBlock_Sticker$Type extends MessageType<CEconItemPrevie
         /* optional float offset_y = 8; */
         if (message.offsetY !== undefined)
             writer.tag(8, WireType.Bit32).float(message.offsetY);
+        /* optional float offset_z = 9; */
+        if (message.offsetZ !== undefined)
+            writer.tag(9, WireType.Bit32).float(message.offsetZ);
+        /* optional uint32 pattern = 10; */
+        if (message.pattern !== undefined)
+            writer.tag(10, WireType.Varint).uint32(message.pattern);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

@@ -81,7 +81,7 @@ function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBl
 }
 
 function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDataBlock {
-    const { nameTag, seed, statTrak, stickers, patches } = item;
+    const { nameTag, seed, statTrak, stickers, patches, keychains } = item;
     const baseAttributes = getEconomyItemPreviewData(item);
     return {
         ...baseAttributes,
@@ -104,7 +104,17 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                         slot,
                         stickerId: item.economy.getById(patchId).index
                     }))
-                  : baseAttributes.stickers
+                  : baseAttributes.stickers,
+        keychains:
+            keychains !== undefined
+                ? item.someKeychains().map(([slot, { id, x, y, seed }]) => ({
+                      offsetX: x,
+                      offsetY: y,
+                      pattern: seed,
+                      slot,
+                      stickerId: item.economy.getById(id).index
+                  }))
+                : baseAttributes.keychains
     };
 }
 
