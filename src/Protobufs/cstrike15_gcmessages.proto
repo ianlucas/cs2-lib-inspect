@@ -12,6 +12,8 @@ message CEconItemPreviewDataBlock {
 		optional uint32 tint_id = 6;
 		optional float offset_x = 7;
 		optional float offset_y = 8;
+		optional float offset_z = 9;
+		optional uint32 pattern = 10;
 	}
 
 	optional uint32 accountid = 1;
