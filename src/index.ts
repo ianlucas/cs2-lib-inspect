@@ -58,7 +58,7 @@ export const CS2_PREVIEW_ATTRIBUTELESS_ITEMS: CS2ItemTypeValues[] = [
 ];
 
 export const CS2_PREVIEW_URL = "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20";
-export const CS2_PREVIEW_COMMAND = "csgo_econ_action_preview";
+export const CS2_PREVIEW_COMMAND = "csgo_econ_action_preview ";
 
 function floatToBytes(floatValue: number) {
     const floatArray = new Float32Array(1);
@@ -165,7 +165,7 @@ export function generateInspectLink(item: CS2EconomyItem | CS2InventoryItem) {
     const hex = generateHex(attributes);
     // There's a char limit for launching the game using the steam:// protocol.
     if (CS2_PREVIEW_URL.length + hex.length > 300) {
-        return `${CS2_PREVIEW_COMMAND} ${hex}`;
+        return `${CS2_PREVIEW_COMMAND}${hex}`;
     }
     return `${CS2_PREVIEW_URL}${hex}`;
 }
@@ -200,7 +200,7 @@ function parseHex(hexString: string): CEconItemPreviewDataBlock {
 
 export function parseInspectLink(economy: CS2EconomyInstance, inspectLink: string): CS2BaseInventoryItem {
     const hex = isCommandInspect(inspectLink)
-        ? inspectLink.replace(`${CS2_PREVIEW_COMMAND} `, "")
+        ? inspectLink.replace(CS2_PREVIEW_COMMAND, "")
         : inspectLink.replace(CS2_PREVIEW_URL, "");
     const attributes = parseHex(hex);
     let economyItem = economy.itemsAsArray.find((item) => item.def === attributes.defindex);
