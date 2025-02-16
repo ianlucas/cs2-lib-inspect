@@ -17,6 +17,7 @@ import CRC32 from "crc-32";
 import { CEconItemPreviewDataBlock } from "./Protobufs/cstrike15_gcmessages.js";
 
 export const CS2PreviewRarity = {
+    [CS2RarityColor.Default]: 0,
     [CS2RarityColor.Common]: 1,
     [CS2RarityColor.Uncommon]: 2,
     [CS2RarityColor.Rare]: 3,
@@ -64,28 +65,13 @@ function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBl
     const hasKeychains = item.isKeychain();
     return {
         defindex: def,
-        keychains: hasKeychains
-            ? [
-                  {
-                      stickerId: index,
-                      slot: 0
-                  }
-              ]
-            : [],
+        keychains: hasKeychains ? [{ stickerId: index, slot: 0 }] : [],
         musicindex: item.isMusicKit() ? index : undefined,
         paintindex: hasPaintIndex ? index : undefined,
         paintseed: item.hasSeed() ? CS2_MIN_SEED : undefined,
         paintwear: item.hasWear() ? floatToBytes(item.getMinimumWear()) : undefined,
         rarity: CS2PreviewRarity[rarity] ?? 0,
-        stickers: hasStickers
-            ? [
-                  {
-                      tintId: tint,
-                      stickerId: index,
-                      slot: 0
-                  }
-              ]
-            : []
+        stickers: hasStickers ? [{ tintId: tint, stickerId: index, slot: 0 }] : []
     };
 }
 
@@ -101,28 +87,31 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
         paintwear: item.hasWear() ? floatToBytes(item.getWear()) : undefined,
         stickers:
             stickers !== undefined
-                ? item.someStickers().map(([slot, { id, wear, x, y }]) => ({
-                      offsetX: x,
-                      offsetY: y,
-                      slot,
-                      stickerId: item.economy.getById(id).index,
-                      wear: wear ?? CS2_MIN_STICKER_WEAR
-                  }))
+                ? item
+                      .someStickers()
+                      .map(([slot, { id, wear, x, y }]) => ({
+                          offsetX: x,
+                          offsetY: y,
+                          slot,
+                          stickerId: item.economy.getById(id).index,
+                          wear: wear ?? CS2_MIN_STICKER_WEAR
+                      }))
                 : patches !== undefined
-                  ? item.somePatches().map(([slot, patchId]) => ({
-                        slot,
-                        stickerId: item.economy.getById(patchId).index
-                    }))
+                  ? item
+                        .somePatches()
+                        .map(([slot, patchId]) => ({ slot, stickerId: item.economy.getById(patchId).index }))
                   : baseAttributes.stickers,
         keychains:
             keychains !== undefined
-                ? item.someKeychains().map(([slot, { id, x, y, seed }]) => ({
-                      offsetX: x,
-                      offsetY: y,
-                      pattern: seed,
-                      slot,
-                      stickerId: item.economy.getById(id).index
-                  }))
+                ? item
+                      .someKeychains()
+                      .map(([slot, { id, x, y, seed }]) => ({
+                          offsetX: x,
+                          offsetY: y,
+                          pattern: seed,
+                          slot,
+                          stickerId: item.economy.getById(id).index
+                      }))
                 : item.isKeychain()
                   ? baseAttributes.keychains.map((keychain) => {
                         keychain.pattern = seed;
