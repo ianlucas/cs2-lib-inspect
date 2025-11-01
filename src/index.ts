@@ -104,15 +104,14 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
         paintwear: item.hasWear() ? floatToBytes(item.getWear()) : undefined,
         stickers:
             stickers !== undefined
-                ? item
-                      .someStickers()
-                      .map(([slot, { id, wear, x, y }]) => ({
-                          offsetX: x,
-                          offsetY: y,
-                          slot,
-                          stickerId: item.economy.getById(id).index,
-                          wear: wear ?? CS2_MIN_STICKER_WEAR
-                      }))
+                ? item.someStickers().map(([slot, { id, wear, rotation, x, y }]) => ({
+                      offsetX: x,
+                      offsetY: y,
+                      rotation,
+                      slot,
+                      stickerId: item.economy.getById(id).index,
+                      wear: wear ?? CS2_MIN_STICKER_WEAR
+                  }))
                 : patches !== undefined
                   ? item
                         .somePatches()
@@ -120,15 +119,13 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                   : baseAttributes.stickers,
         keychains:
             keychains !== undefined
-                ? item
-                      .someKeychains()
-                      .map(([slot, { id, x, y, seed }]) => ({
-                          offsetX: x,
-                          offsetY: y,
-                          pattern: seed,
-                          slot,
-                          stickerId: item.economy.getById(id).index
-                      }))
+                ? item.someKeychains().map(([slot, { id, x, y, seed }]) => ({
+                      offsetX: x,
+                      offsetY: y,
+                      pattern: seed,
+                      slot,
+                      stickerId: item.economy.getById(id).index
+                  }))
                 : item.isKeychain()
                   ? baseAttributes.keychains.map((keychain) => {
                         keychain.pattern = seed;

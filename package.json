@@ -19,13 +19,13 @@
         "crc-32": "^1.2.2"
     },
     "peerDependencies": {
-        "@ianlucas/cs2-lib": "^5.9.0"
+        "@ianlucas/cs2-lib": "^7.0.0"
     },
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.9.4",
         "@total-typescript/tsconfig": "^1.0.4",
-        "prettier": "^3.5.1",
-        "typedoc": "^0.27.7",
-        "typescript": "^5.7.3"
+        "prettier": "^3.5.2",
+        "typedoc": "^0.27.9",
+        "typescript": "^5.8.2"
     }
 }
