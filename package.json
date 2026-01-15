@@ -24,7 +24,7 @@
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.11.1",
         "@total-typescript/tsconfig": "^1.0.4",
-        "prettier": "^3.7.4",
+        "prettier": "^3.8.0",
         "typedoc": "^0.28.16",
         "typescript": "^5.9.3"
     }
