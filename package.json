@@ -2,9 +2,19 @@
     "name": "@ianlucas/cs2-lib-inspect",
     "description": "An extension for cs2-lib to create Counter-Strike 2 inspect links",
     "license": "MIT",
-    "repository": "ianlucas/cs2-lib-inspect",
+    "author": "Ian Lucas",
+    "homepage": "https://github.com/ianlucas/cs2-lib-inspect#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ianlucas/cs2-lib-inspect.git"
+    },
+    "bugs": {
+        "url": "https://github.com/ianlucas/cs2-lib-inspect/issues"
+    },
     "type": "module",
-    "main": "dist/index.js",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "sideEffects": false,
     "scripts": {
         "docs": "typedoc --out docs src/index.ts",
         "format": "prettier . --write",
@@ -27,5 +37,8 @@
         "prettier": "^3.8.1",
         "typedoc": "^0.28.17",
         "typescript": "^5.9.3"
+    },
+    "engines": {
+        "node": ">=20"
     }
 }
