@@ -2,9 +2,19 @@
     "name": "@ianlucas/cs2-lib-inspect",
     "description": "An extension for cs2-lib to create Counter-Strike 2 inspect links",
     "license": "MIT",
-    "repository": "ianlucas/cs2-lib-inspect",
+    "author": "Ian Lucas",
+    "homepage": "https://github.com/ianlucas/cs2-lib-inspect#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ianlucas/cs2-lib-inspect.git"
+    },
+    "bugs": {
+        "url": "https://github.com/ianlucas/cs2-lib-inspect/issues"
+    },
     "type": "module",
-    "main": "dist/index.js",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "sideEffects": false,
     "scripts": {
         "docs": "typedoc --out docs src/index.ts",
         "format": "prettier . --write",
@@ -14,7 +24,7 @@
         "upgrade": "npx npm-check-updates@latest --target minor -u"
     },
     "dependencies": {
-        "@protobuf-ts/runtime": "^2.9.4",
+        "@protobuf-ts/runtime": "^2.11.1",
         "buffer": "^6.0.3",
         "crc-32": "^1.2.2"
     },
@@ -22,10 +32,13 @@
         "@ianlucas/cs2-lib": "^7.0.0"
     },
     "devDependencies": {
-        "@protobuf-ts/plugin": "^2.9.4",
+        "@protobuf-ts/plugin": "^2.11.1",
         "@total-typescript/tsconfig": "^1.0.4",
-        "prettier": "^3.5.2",
-        "typedoc": "^0.27.9",
-        "typescript": "^5.8.2"
+        "prettier": "^3.8.1",
+        "typedoc": "^0.28.17",
+        "typescript": "^5.9.3"
+    },
+    "engines": {
+        "node": ">=20"
     }
 }
