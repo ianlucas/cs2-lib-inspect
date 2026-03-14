@@ -20,13 +20,15 @@
         "format": "prettier . --write",
         "generate:protobufs": "npx protoc --ts_out ./src/Protobufs --proto_path src/Protobufs src/Protobufs/cstrike15_gcmessages.proto",
         "prepack": "([ -d dist ] && rm -rf dist); tsc",
+        "test": "vitest --run --testTimeout 120000",
         "typecheck": "tsc --noEmit",
         "upgrade": "npx npm-check-updates@latest --target minor -u"
     },
     "dependencies": {
         "@protobuf-ts/runtime": "^2.11.1",
         "buffer": "^6.0.3",
-        "crc-32": "^1.2.2"
+        "crc-32": "^1.2.2",
+        "vitest": "^4.1.0"
     },
     "peerDependencies": {
         "@ianlucas/cs2-lib": "^7.0.0"
