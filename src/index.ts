@@ -278,7 +278,7 @@ export function parseInspectLink(economy: CS2EconomyInstance, inspectLink: strin
                                       ensure(slot),
                                       ensure(
                                           economy.itemsAsArray.find(
-                                              (item) => item.isSticker() && item.index === stickerId
+                                              (item) => item.isPatch() && item.index === stickerId
                                           )?.id
                                       )
                                   ])
