@@ -160,6 +160,55 @@ export function isCommandInspect(inspectLink: string) {
     return inspectLink.startsWith(CS2_PREVIEW_COMMAND);
 }
 
+export function isSteamInspectLink(inspectLink: string): boolean {
+    try {
+        const decoded = decodeURI(inspectLink);
+        return /^steam:\/\/rungame\/730\/\d+\/[+ ]csgo_econ_action_preview [SM]\d+A\d+D\d+$/.test(decoded);
+    } catch {
+        return false;
+    }
+}
+
+export interface CSFloatStickerInfo {
+    slot: number;
+    stickerId: number;
+    wear?: number;
+    rotation?: number;
+    offsetX?: number;
+    offsetY?: number;
+    tintId?: number;
+    pattern?: number;
+}
+
+export interface CSFloatItemInfo {
+    defindex: number;
+    paintindex?: number;
+    paintseed?: number;
+    floatvalue?: number;
+    killeatervalue?: number;
+    customname?: string;
+    musicindex?: number;
+    stickers?: CSFloatStickerInfo[];
+    keychains?: CSFloatStickerInfo[];
+    origin?: number;
+    quality?: number;
+    rarity?: number;
+    floatid?: number;
+    imageurl?: string;
+    min?: number;
+    max?: number;
+    weapon_type?: string;
+    item_name?: string;
+    rarity_name?: string;
+    quality_name?: string;
+    wear_name?: string;
+    full_item_name?: string;
+    s?: string;
+    a?: string;
+    d?: string;
+    m?: string;
+}
+
 function parseHex(hexString: string): CEconItemPreviewDataBlock {
     // Convert hex string to buffer
     const buffer = Buffer.from(hexString.toLowerCase(), "hex");
@@ -276,6 +325,126 @@ export function parseInspectLink(economy: CS2EconomyInstance, inspectLink: strin
                             ? Object.fromEntries(
                                   attributes.stickers.map(({ slot, stickerId }) => [
                                       ensure(slot),
+                                      ensure(
+                                          economy.itemsAsArray.find(
+                                              (item) => item.isPatch() && item.index === stickerId
+                                          )?.id
+                                      )
+                                  ])
+                              )
+                            : undefined
+                };
+            }
+        }
+    }
+    if (baseInventoryItem !== undefined) {
+        if (baseInventoryItem.seed === CS2_MIN_SEED) {
+            baseInventoryItem.seed = undefined;
+        }
+        if (baseInventoryItem.wear === CS2_MIN_WEAR) {
+            baseInventoryItem.wear = undefined;
+        }
+        if (baseInventoryItem.stickers !== undefined) {
+            for (const sticker of Object.values(baseInventoryItem.stickers)) {
+                if (sticker.wear === CS2_MIN_STICKER_WEAR) {
+                    sticker.wear = undefined;
+                }
+            }
+        }
+    }
+    return ensure(baseInventoryItem);
+}
+
+export function parseCSFloatItemInfo(economy: CS2EconomyInstance, itemInfo: CSFloatItemInfo): CS2BaseInventoryItem {
+    const stickers = itemInfo.stickers ?? [];
+    const keychains = itemInfo.keychains ?? [];
+    let economyItem = economy.itemsAsArray.find((item) => item.def === itemInfo.defindex);
+    let baseInventoryItem: CS2BaseInventoryItem | undefined;
+    if (economyItem !== undefined && CS2_PREVIEW_HAS_STICKERS.includes(economyItem.type)) {
+        // Collectible comes from the initial assignment.
+        if (stickers.length === 1) {
+            // Patch, Sticker, and Graffiti
+            economyItem = economy.itemsAsArray.find(
+                (item) =>
+                    item.def === itemInfo.defindex &&
+                    item.index === stickers[0].stickerId &&
+                    item.tint === stickers[0].tintId
+            );
+        }
+        if (economyItem !== undefined) {
+            baseInventoryItem = { id: economyItem.id };
+        }
+    } else {
+        if (itemInfo.musicindex !== undefined) {
+            // Music Kit
+            economyItem = economy.itemsAsArray.find(
+                (item) => item.isMusicKit() && item.index === itemInfo.musicindex
+            );
+            if (economyItem !== undefined) {
+                baseInventoryItem = { id: economyItem.id, statTrak: itemInfo.killeatervalue };
+            }
+        } else {
+            economyItem = economy.itemsAsArray.find(
+                itemInfo.paintindex !== undefined
+                    ? (item) => item.def === itemInfo.defindex && item.index === itemInfo.paintindex
+                    : (item) => item.def === itemInfo.defindex
+            );
+        }
+        if (economyItem !== undefined && baseInventoryItem === undefined) {
+            if (economyItem.isKeychain()) {
+                baseInventoryItem = {
+                    id: economyItem.id,
+                    seed: keychains[0]?.pattern ?? itemInfo.paintseed
+                };
+            } else {
+                baseInventoryItem = {
+                    id: economyItem.id,
+                    seed: itemInfo.paintseed,
+                    wear: itemInfo.floatvalue,
+                    statTrak: itemInfo.killeatervalue,
+                    nameTag: itemInfo.customname,
+                    keychains:
+                        keychains.length > 0
+                            ? Object.fromEntries(
+                                  keychains.map(({ offsetX, offsetY, pattern, slot, stickerId }) => [
+                                      slot,
+                                      {
+                                          id: ensure(
+                                              economy.itemsAsArray.find(
+                                                  (item) => item.isKeychain() && item.index === stickerId
+                                              )?.id
+                                          ),
+                                          seed: pattern,
+                                          x: offsetX,
+                                          y: offsetY
+                                      }
+                                  ])
+                              )
+                            : undefined,
+                    stickers:
+                        !economyItem.isAgent() && stickers.length > 0
+                            ? Object.fromEntries(
+                                  stickers.map(({ slot, stickerId, offsetX, offsetY, wear, rotation }) => [
+                                      slot,
+                                      {
+                                          id: ensure(
+                                              economy.itemsAsArray.find(
+                                                  (item) => item.isSticker() && item.index === stickerId
+                                              )?.id
+                                          ),
+                                          rotation,
+                                          wear,
+                                          x: offsetX,
+                                          y: offsetY
+                                      }
+                                  ])
+                              )
+                            : undefined,
+                    patches:
+                        economyItem.isAgent() && stickers.length > 0
+                            ? Object.fromEntries(
+                                  stickers.map(({ slot, stickerId }) => [
+                                      slot,
                                       ensure(
                                           economy.itemsAsArray.find(
                                               (item) => item.isPatch() && item.index === stickerId
