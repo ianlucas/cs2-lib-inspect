@@ -159,6 +159,34 @@ describe("parseInspectLink", () => {
         const addInventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
         expect(() => addInventory.add(result)).not.toThrow();
     });
+
+    test("sticker schema roundtrip", () => {
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        inventory.add({
+            id: AWP_DRAGON_LORE_ID,
+            stickers: {
+                0: { id: FALLEN_COLOGNE_2015_ID, schema: 1 },
+                1: { id: FALLEN_COLOGNE_2015_ID, schema: 2 }
+            }
+        });
+        const result = roundtrip(inventory.get(0));
+        expect(result.stickers?.[0]?.schema).toBe(1);
+        expect(result.stickers?.[1]?.schema).toBe(2);
+    });
+
+    test("sticker without schema uses slot as schema", () => {
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        inventory.add({
+            id: AWP_DRAGON_LORE_ID,
+            stickers: {
+                0: { id: FALLEN_COLOGNE_2015_ID },
+                2: { id: FALLEN_COLOGNE_2015_ID }
+            }
+        });
+        const result = roundtrip(inventory.get(0));
+        expect(result.stickers?.[0]?.schema).toBe(0);
+        expect(result.stickers?.[1]?.schema).toBe(2);
+    });
 });
 
 describe("isSteamInspectLink", () => {
@@ -371,6 +399,25 @@ describe("parseCSFloatItemInfo", () => {
             stickers: [{ slot: 0, stickerId: ensure(sticker.index), rotation: 45.7 }]
         });
         expect(result.stickers?.[0]?.rotation).toBe(45);
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        expect(() => inventory.add(result)).not.toThrow();
+    });
+
+    test("stickers use array index as key and slot as schema", () => {
+        const weapon = CS2Economy.getById(AWP_DRAGON_LORE_ID);
+        const sticker = CS2Economy.getById(FALLEN_COLOGNE_2015_ID);
+        const result = parseCSFloatItemInfo(CS2Economy, {
+            defindex: ensure(weapon.def),
+            paintindex: weapon.index,
+            stickers: [
+                { slot: 1, stickerId: ensure(sticker.index) },
+                { slot: 1, stickerId: ensure(sticker.index) },
+                { slot: 2, stickerId: ensure(sticker.index) }
+            ]
+        });
+        expect(result.stickers?.[0]?.schema).toBe(1);
+        expect(result.stickers?.[1]?.schema).toBe(1);
+        expect(result.stickers?.[2]?.schema).toBe(2);
         const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
         expect(() => inventory.add(result)).not.toThrow();
     });
