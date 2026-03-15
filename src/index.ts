@@ -14,6 +14,8 @@ import {
     CS2_MIN_SEED,
     CS2_MIN_STICKER_WEAR,
     CS2_MIN_WEAR,
+    CS2_STICKER_WEAR_FACTOR,
+    CS2_WEAR_FACTOR,
     ensure
 } from "@ianlucas/cs2-lib";
 import { Buffer } from "buffer";
@@ -73,6 +75,10 @@ function bytesToFloat(byteValue: number) {
     byteArray[0] = byteValue;
     const floatArray = new Float32Array(byteArray.buffer);
     return floatArray[0];
+}
+
+function truncate(value: number, factor: number) {
+    return parseFloat(String(value).substring(0, String(factor).length));
 }
 
 function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBlock {
@@ -280,7 +286,10 @@ export function parseInspectLink(economy: CS2EconomyInstance, inspectLink: strin
                 baseInventoryItem = {
                     id: economyItem.id,
                     seed: attributes.paintseed,
-                    wear: attributes.paintwear !== undefined ? bytesToFloat(attributes.paintwear) : undefined,
+                    wear:
+                        attributes.paintwear !== undefined
+                            ? truncate(bytesToFloat(attributes.paintwear), CS2_WEAR_FACTOR)
+                            : undefined,
                     statTrak: attributes.killeatervalue,
                     nameTag: attributes.customname,
                     keychains:
@@ -312,8 +321,9 @@ export function parseInspectLink(economy: CS2EconomyInstance, inspectLink: strin
                                                   (item) => item.isSticker() && item.index === stickerId
                                               )?.id
                                           ),
-                                          rotation,
-                                          wear,
+                                          rotation: rotation !== undefined ? Math.trunc(rotation) : undefined,
+                                          wear:
+                                              wear !== undefined ? truncate(wear, CS2_STICKER_WEAR_FACTOR) : undefined,
                                           x: offsetX,
                                           y: offsetY
                                       }
@@ -377,9 +387,7 @@ export function parseCSFloatItemInfo(economy: CS2EconomyInstance, itemInfo: CSFl
     } else {
         if (itemInfo.musicindex !== undefined) {
             // Music Kit
-            economyItem = economy.itemsAsArray.find(
-                (item) => item.isMusicKit() && item.index === itemInfo.musicindex
-            );
+            economyItem = economy.itemsAsArray.find((item) => item.isMusicKit() && item.index === itemInfo.musicindex);
             if (economyItem !== undefined) {
                 baseInventoryItem = { id: economyItem.id, statTrak: itemInfo.killeatervalue };
             }
@@ -400,7 +408,8 @@ export function parseCSFloatItemInfo(economy: CS2EconomyInstance, itemInfo: CSFl
                 baseInventoryItem = {
                     id: economyItem.id,
                     seed: itemInfo.paintseed,
-                    wear: itemInfo.floatvalue,
+                    wear:
+                        itemInfo.floatvalue !== undefined ? truncate(itemInfo.floatvalue, CS2_WEAR_FACTOR) : undefined,
                     statTrak: itemInfo.killeatervalue,
                     nameTag: itemInfo.customname,
                     keychains:
@@ -432,8 +441,9 @@ export function parseCSFloatItemInfo(economy: CS2EconomyInstance, itemInfo: CSFl
                                                   (item) => item.isSticker() && item.index === stickerId
                                               )?.id
                                           ),
-                                          rotation,
-                                          wear,
+                                          rotation: rotation !== undefined ? Math.trunc(rotation) : undefined,
+                                          wear:
+                                              wear !== undefined ? truncate(wear, CS2_STICKER_WEAR_FACTOR) : undefined,
                                           x: offsetX,
                                           y: offsetY
                                       }
