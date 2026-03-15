@@ -76,12 +76,12 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
         }
         return stripMinValues({
             id: economyItem.id,
-            seed: paintseed,
-            wear: floatvalue !== undefined ? truncate(floatvalue, CS2_WEAR_FACTOR) : undefined,
-            statTrak: killeatervalue,
-            nameTag: customname,
+            seed: economyItem.hasSeed() ? paintseed : undefined,
+            wear: economyItem.hasWear() && floatvalue !== undefined ? truncate(floatvalue, CS2_WEAR_FACTOR) : undefined,
+            statTrak: economyItem.hasStatTrak() ? killeatervalue : undefined,
+            nameTag: economyItem.hasNametag() ? customname : undefined,
             keychains:
-                keychains.length > 0
+                economyItem.hasKeychains() && keychains.length > 0
                     ? Object.fromEntries(
                           keychains.map(({ offsetX, offsetY, pattern, slot, stickerId }) => [
                               slot,
@@ -98,7 +98,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                       )
                     : undefined,
             stickers:
-                !economyItem.isAgent() && stickers.length > 0
+                economyItem.hasStickers() && stickers.length > 0
                     ? Object.fromEntries(
                           stickers.map(({ slot, stickerId, offsetX, offsetY, wear, rotation }, index) => [
                               index,
@@ -117,7 +117,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                       )
                     : undefined,
             patches:
-                economyItem.isAgent() && stickers.length > 0
+                economyItem.hasPatches() && stickers.length > 0
                     ? Object.fromEntries(
                           stickers.map(({ slot, stickerId }) => [
                               slot,

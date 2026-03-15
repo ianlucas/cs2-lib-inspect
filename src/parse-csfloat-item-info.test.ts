@@ -16,6 +16,8 @@ const LIL_AVA_ID = 13113;
 const BLOODY_DARRYL_THE_STRAPPED_ID = 8657;
 const FALLEN_COLOGNE_2015_ID = 2226;
 const BLOODHOUND_ID = 8569;
+const GUT_KNIFE_BASE_ID = 40;
+const KARAMBIT_BASE_ID = 41;
 
 CS2Economy.use({ items: CS2_ITEMS, language: english });
 
@@ -195,6 +197,20 @@ describe("parseCSFloatItemInfo", () => {
         expect(result.stickers?.[0]?.rotation).toBe(45);
         const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
         expect(() => inventory.add(result)).not.toThrow();
+    });
+
+    test("base melee (index=0) strips wear and seed", () => {
+        for (const id of [GUT_KNIFE_BASE_ID, KARAMBIT_BASE_ID]) {
+            const item = CS2Economy.getById(id);
+            const result = parseCSFloatItemInfo(CS2Economy, {
+                defindex: ensure(item.def),
+                floatvalue: 0.5,
+                paintseed: 500
+            });
+            expect(result.id).toBe(id);
+            expect(result.wear).toBeUndefined();
+            expect(result.seed).toBeUndefined();
+        }
     });
 
     test("stickers use array index as key and slot as schema", () => {
