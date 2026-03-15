@@ -3,21 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-    type CS2BaseInventoryItem,
-    CS2EconomyInstance,
-    CS2_MIN_SEED,
-    CS2_MIN_STICKER_WEAR,
-    CS2_MIN_WEAR,
-    CS2_STICKER_WEAR_FACTOR,
-    CS2_WEAR_FACTOR,
-    ensure
-} from "@ianlucas/cs2-lib";
+import { type CS2BaseInventoryItem, CS2EconomyInstance } from "@ianlucas/cs2-lib";
 import { Buffer } from "buffer";
 import CRC32 from "crc-32";
-import { CS2_PREVIEW_COMMAND, CS2_PREVIEW_HAS_STICKERS, CS2_PREVIEW_URL } from "./constants.js";
+import { CS2_PREVIEW_COMMAND, CS2_PREVIEW_URL } from "./constants.js";
+import { parseGCInventoryItem } from "./parse-gc-inventory-item.js";
 import { CEconItemPreviewDataBlock } from "./Protobufs/cstrike15_gcmessages.js";
-import { bytesToFloat, truncate } from "./utils.js";
+import { bytesToFloat } from "./utils.js";
 
 export function isCommandInspect(inspectLink: string) {
     return inspectLink.startsWith(CS2_PREVIEW_COMMAND);
@@ -61,128 +53,15 @@ export function parseInspectLink(economy: CS2EconomyInstance, inspectLink: strin
         ? inspectLink.replace(CS2_PREVIEW_COMMAND, "")
         : inspectLink.replace(CS2_PREVIEW_URL, "");
     const attributes = parseHex(hex);
-    let economyItem = economy.itemsAsArray.find((item) => item.def === attributes.defindex);
-    let baseInventoryItem: CS2BaseInventoryItem | undefined;
-    if (economyItem !== undefined && CS2_PREVIEW_HAS_STICKERS.includes(economyItem.type)) {
-        // Collectible comes from the initial assignment.
-        if (attributes.stickers.length === 1) {
-            // Patch, Sticker, and Graffiti
-            economyItem = economy.itemsAsArray.find(
-                (item) =>
-                    item.def === attributes.defindex &&
-                    item.index === attributes.stickers[0].stickerId &&
-                    item.tint === attributes.stickers[0].tintId
-            );
-        }
-        if (economyItem !== undefined) {
-            baseInventoryItem = { id: economyItem.id };
-        }
-    } else {
-        if (attributes.musicindex !== undefined) {
-            // Music Kit
-            economyItem = economy.itemsAsArray.find(
-                (item) => item.isMusicKit() && item.index === attributes.musicindex
-            );
-            if (economyItem !== undefined) {
-                baseInventoryItem = { id: economyItem.id, statTrak: attributes.killeatervalue };
-            }
-        } else {
-            economyItem = economy.itemsAsArray.find(
-                attributes.paintindex !== undefined
-                    ? (item) => item.def === attributes.defindex && item.index === attributes.paintindex
-                    : (item) => item.def === attributes.defindex
-            );
-        }
-        if (economyItem !== undefined && baseInventoryItem === undefined) {
-            if (economyItem.isKeychain()) {
-                baseInventoryItem = {
-                    id: economyItem.id,
-                    seed: attributes.keychains[0]?.pattern ?? attributes.paintseed
-                };
-            } else {
-                baseInventoryItem = {
-                    id: economyItem.id,
-                    seed: attributes.paintseed,
-                    wear:
-                        attributes.paintwear !== undefined
-                            ? truncate(bytesToFloat(attributes.paintwear), CS2_WEAR_FACTOR)
-                            : undefined,
-                    statTrak: attributes.killeatervalue,
-                    nameTag: attributes.customname,
-                    keychains:
-                        attributes.keychains.length > 0
-                            ? Object.fromEntries(
-                                  attributes.keychains.map(({ offsetX, offsetY, pattern, slot, stickerId }) => [
-                                      ensure(slot),
-                                      {
-                                          id: ensure(
-                                              economy.itemsAsArray.find(
-                                                  (item) => item.isKeychain() && item.index === stickerId
-                                              )?.id
-                                          ),
-                                          seed: pattern,
-                                          x: offsetX,
-                                          y: offsetY
-                                      }
-                                  ])
-                              )
-                            : undefined,
-                    stickers:
-                        !economyItem.isAgent() && attributes.stickers.length > 0
-                            ? Object.fromEntries(
-                                  attributes.stickers?.map(
-                                      ({ slot, stickerId, offsetX, offsetY, wear, rotation }, index) => [
-                                          index,
-                                          {
-                                              id: ensure(
-                                                  economy.itemsAsArray.find(
-                                                      (item) => item.isSticker() && item.index === stickerId
-                                                  )?.id
-                                              ),
-                                              rotation: rotation !== undefined ? Math.trunc(rotation) : undefined,
-                                              schema: slot,
-                                              wear:
-                                                  wear !== undefined
-                                                      ? truncate(wear, CS2_STICKER_WEAR_FACTOR)
-                                                      : undefined,
-                                              x: offsetX,
-                                              y: offsetY
-                                          }
-                                      ]
-                                  )
-                              )
-                            : undefined,
-                    patches:
-                        economyItem.isAgent() && attributes.stickers.length > 0
-                            ? Object.fromEntries(
-                                  attributes.stickers.map(({ slot, stickerId }) => [
-                                      ensure(slot),
-                                      ensure(
-                                          economy.itemsAsArray.find(
-                                              (item) => item.isPatch() && item.index === stickerId
-                                          )?.id
-                                      )
-                                  ])
-                              )
-                            : undefined
-                };
-            }
-        }
-    }
-    if (baseInventoryItem !== undefined) {
-        if (baseInventoryItem.seed === CS2_MIN_SEED) {
-            baseInventoryItem.seed = undefined;
-        }
-        if (baseInventoryItem.wear === CS2_MIN_WEAR) {
-            baseInventoryItem.wear = undefined;
-        }
-        if (baseInventoryItem.stickers !== undefined) {
-            for (const sticker of Object.values(baseInventoryItem.stickers)) {
-                if (sticker.wear === CS2_MIN_STICKER_WEAR) {
-                    sticker.wear = undefined;
-                }
-            }
-        }
-    }
-    return ensure(baseInventoryItem);
+    return parseGCInventoryItem(economy, {
+        defindex: attributes.defindex ?? 0,
+        paintindex: attributes.paintindex,
+        paintseed: attributes.paintseed,
+        floatvalue: attributes.paintwear !== undefined ? bytesToFloat(attributes.paintwear) : undefined,
+        killeatervalue: attributes.killeatervalue,
+        customname: attributes.customname,
+        musicindex: attributes.musicindex,
+        stickers: attributes.stickers,
+        keychains: attributes.keychains
+    });
 }
