@@ -136,6 +136,29 @@ describe("parseInspectLink", () => {
         expect(result.wear).toBeUndefined();
         expect(result.seed).toBeUndefined();
     });
+
+    test("wear is truncated to valid decimal places", () => {
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        inventory.add({ id: AWP_DRAGON_LORE_ID, wear: 0.233422 });
+        const result = roundtrip(inventory.get(0));
+        expect(result.wear).toBeDefined();
+        expect(String(result.wear).length).toBeLessThanOrEqual(String(0.000001).length);
+        const addInventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        expect(() => addInventory.add(result)).not.toThrow();
+    });
+
+    test("sticker wear is truncated to valid decimal places", () => {
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        inventory.add({
+            id: AWP_DRAGON_LORE_ID,
+            stickers: { 0: { id: FALLEN_COLOGNE_2015_ID, wear: 0.1 } }
+        });
+        const result = roundtrip(inventory.get(0));
+        expect(result.stickers?.[0]?.wear).toBeDefined();
+        expect(String(result.stickers?.[0]?.wear).length).toBeLessThanOrEqual(String(0.1).length);
+        const addInventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        expect(() => addInventory.add(result)).not.toThrow();
+    });
 });
 
 describe("isSteamInspectLink", () => {
@@ -312,5 +335,43 @@ describe("parseCSFloatItemInfo", () => {
         expect(result.id).toBe(AWP_DRAGON_LORE_ID);
         expect(result.wear).toBeUndefined();
         expect(result.seed).toBeUndefined();
+    });
+
+    test("wear is truncated to valid decimal places", () => {
+        const item = CS2Economy.getById(AWP_DRAGON_LORE_ID);
+        const result = parseCSFloatItemInfo(CS2Economy, {
+            defindex: ensure(item.def),
+            paintindex: item.index,
+            floatvalue: 0.2334222222
+        });
+        expect(result.wear).toBe(0.233422);
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        expect(() => inventory.add(result)).not.toThrow();
+    });
+
+    test("sticker wear is truncated to valid decimal places", () => {
+        const weapon = CS2Economy.getById(AWP_DRAGON_LORE_ID);
+        const sticker = CS2Economy.getById(FALLEN_COLOGNE_2015_ID);
+        const result = parseCSFloatItemInfo(CS2Economy, {
+            defindex: ensure(weapon.def),
+            paintindex: weapon.index,
+            stickers: [{ slot: 0, stickerId: ensure(sticker.index), wear: 0.16 }]
+        });
+        expect(result.stickers?.[0]?.wear).toBe(0.1);
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        expect(() => inventory.add(result)).not.toThrow();
+    });
+
+    test("sticker rotation is truncated to integer", () => {
+        const weapon = CS2Economy.getById(AWP_DRAGON_LORE_ID);
+        const sticker = CS2Economy.getById(FALLEN_COLOGNE_2015_ID);
+        const result = parseCSFloatItemInfo(CS2Economy, {
+            defindex: ensure(weapon.def),
+            paintindex: weapon.index,
+            stickers: [{ slot: 0, stickerId: ensure(sticker.index), rotation: 45.7 }]
+        });
+        expect(result.stickers?.[0]?.rotation).toBe(45);
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        expect(() => inventory.add(result)).not.toThrow();
     });
 });
