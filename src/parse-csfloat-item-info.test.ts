@@ -6,7 +6,7 @@
 import { CS2Economy, CS2Inventory, CS2_ITEMS, ensure } from "@ianlucas/cs2-lib";
 import { english } from "@ianlucas/cs2-lib/translations";
 import { describe, expect, test } from "vitest";
-import { parseCSFloatItemInfo } from "./csfloat.js";
+import { parseCSFloatItemInfo } from "./parse-csfloat-item-info.js";
 
 const AWP_DRAGON_LORE_ID = 307;
 const AK47_ID = 4;
