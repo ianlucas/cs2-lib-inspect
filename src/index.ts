@@ -110,11 +110,11 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
         paintwear: item.hasWear() ? floatToBytes(item.getWear()) : undefined,
         stickers:
             stickers !== undefined
-                ? item.someStickers().map(([slot, { id, wear, rotation, x, y }]) => ({
+                ? item.someStickers().map(([slot, { id, wear, rotation, x, y, schema }]) => ({
                       offsetX: x,
                       offsetY: y,
                       rotation,
-                      slot,
+                      slot: schema ?? slot,
                       stickerId: item.economy.getById(id).index,
                       wear: wear ?? CS2_MIN_STICKER_WEAR
                   }))
@@ -313,21 +313,26 @@ export function parseInspectLink(economy: CS2EconomyInstance, inspectLink: strin
                     stickers:
                         !economyItem.isAgent() && attributes.stickers.length > 0
                             ? Object.fromEntries(
-                                  attributes.stickers?.map(({ slot, stickerId, offsetX, offsetY, wear, rotation }) => [
-                                      ensure(slot),
-                                      {
-                                          id: ensure(
-                                              economy.itemsAsArray.find(
-                                                  (item) => item.isSticker() && item.index === stickerId
-                                              )?.id
-                                          ),
-                                          rotation: rotation !== undefined ? Math.trunc(rotation) : undefined,
-                                          wear:
-                                              wear !== undefined ? truncate(wear, CS2_STICKER_WEAR_FACTOR) : undefined,
-                                          x: offsetX,
-                                          y: offsetY
-                                      }
-                                  ])
+                                  attributes.stickers?.map(
+                                      ({ slot, stickerId, offsetX, offsetY, wear, rotation }, index) => [
+                                          index,
+                                          {
+                                              id: ensure(
+                                                  economy.itemsAsArray.find(
+                                                      (item) => item.isSticker() && item.index === stickerId
+                                                  )?.id
+                                              ),
+                                              rotation: rotation !== undefined ? Math.trunc(rotation) : undefined,
+                                              schema: slot,
+                                              wear:
+                                                  wear !== undefined
+                                                      ? truncate(wear, CS2_STICKER_WEAR_FACTOR)
+                                                      : undefined,
+                                              x: offsetX,
+                                              y: offsetY
+                                          }
+                                      ]
+                                  )
                               )
                             : undefined,
                     patches:
@@ -433,8 +438,8 @@ export function parseCSFloatItemInfo(economy: CS2EconomyInstance, itemInfo: CSFl
                     stickers:
                         !economyItem.isAgent() && stickers.length > 0
                             ? Object.fromEntries(
-                                  stickers.map(({ slot, stickerId, offsetX, offsetY, wear, rotation }) => [
-                                      slot,
+                                  stickers.map(({ slot, stickerId, offsetX, offsetY, wear, rotation }, index) => [
+                                      index,
                                       {
                                           id: ensure(
                                               economy.itemsAsArray.find(
@@ -442,6 +447,7 @@ export function parseCSFloatItemInfo(economy: CS2EconomyInstance, itemInfo: CSFl
                                               )?.id
                                           ),
                                           rotation: rotation !== undefined ? Math.trunc(rotation) : undefined,
+                                          schema: slot,
                                           wear:
                                               wear !== undefined ? truncate(wear, CS2_STICKER_WEAR_FACTOR) : undefined,
                                           x: offsetX,
