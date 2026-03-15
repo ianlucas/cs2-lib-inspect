@@ -60,7 +60,11 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
             economyItem !== undefined ? stripMinValues({ id: economyItem.id, statTrak: killeatervalue }) : undefined
         );
     } else {
-        if (paintindex !== undefined) {
+        if (economyItem?.isKeychain() && keychains.length > 0) {
+            economyItem = economy.itemsAsArray.find(
+                (item) => item.def === defindex && item.index === keychains[0].stickerId
+            );
+        } else if (paintindex !== undefined) {
             economyItem = economy.itemsAsArray.find((item) => item.def === defindex && item.index === paintindex);
         }
         assert(economyItem !== undefined);

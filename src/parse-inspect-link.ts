@@ -27,9 +27,10 @@ export function isSteamInspectLink(inspectLink: string): boolean {
 function parseHex(hexString: string): CEconItemPreviewDataBlock {
     // Convert hex string to buffer
     const buffer = Buffer.from(hexString.toLowerCase(), "hex");
-    // First byte should be 0
-    if (buffer[0] !== 0) {
-        throw new Error("Invalid format: First byte should be 0");
+    // XOR bytes 1..N-1 with the first byte (CS2 native format; no-op when first byte is 0)
+    const xorKey = buffer[0];
+    for (let i = 1; i < buffer.length; i++) {
+        buffer[i] ^= xorKey;
     }
     // Extract the data and CRC portions
     const payload = buffer.slice(0, -4); // Everything except last 4 bytes
