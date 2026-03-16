@@ -213,6 +213,42 @@ describe("parseCSFloatItemInfo", () => {
         }
     });
 
+    test("sticker and keychain offsets are parsed from snake_case fields", () => {
+        const weapon = ensure(CS2Economy.itemsAsArray.find((item) => item.def === 7 && item.index === 707));
+        const result = parseCSFloatItemInfo(CS2Economy, {
+            defindex: ensure(weapon.def),
+            paintindex: weapon.index,
+            floatvalue: 0.002643856918439269,
+            paintseed: 500,
+            stickers: [
+                {
+                    slot: 1,
+                    stickerId: 4931,
+                    wear: 0,
+                    offset_x: -0.03321892,
+                    offset_y: -0.0012936294
+                }
+            ],
+            keychains: [
+                {
+                    slot: 0,
+                    stickerId: 18,
+                    wear: 0,
+                    offset_x: 8.631092,
+                    offset_y: 0.7248813,
+                    offset_z: 2.1417148,
+                    pattern: 47830
+                }
+            ]
+        });
+        expect(result.stickers?.[0]?.x).toBeCloseTo(-0.03321892, 5);
+        expect(result.stickers?.[0]?.y).toBeCloseTo(-0.0012936294, 5);
+        expect(result.keychains?.[0]?.x).toBeCloseTo(8.631092, 5);
+        expect(result.keychains?.[0]?.y).toBeCloseTo(0.7248813, 5);
+        expect(result.keychains?.[0]?.z).toBeCloseTo(2.1417148, 5);
+        expect(result.keychains?.[0]?.seed).toBe(47830);
+    });
+
     test("stickers use array index as key and slot as schema", () => {
         const weapon = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const sticker = CS2Economy.getById(FALLEN_COLOGNE_2015_ID);
