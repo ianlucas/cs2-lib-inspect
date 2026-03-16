@@ -13,6 +13,7 @@ export interface CSFloatStickerInfo {
     rotation?: number;
     offsetX?: number;
     offsetY?: number;
+    offsetZ?: number;
     tintId?: number;
     pattern?: number;
 }

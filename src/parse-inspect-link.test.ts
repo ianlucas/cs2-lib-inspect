@@ -188,6 +188,18 @@ describe("parseInspectLink", () => {
         expect(result.stickers?.[0]?.schema).toBe(0);
         expect(result.stickers?.[1]?.schema).toBe(2);
     });
+
+    test("sticker negative rotation is normalized to 0-359", () => {
+        const originalLink =
+            "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%2000181020B5022807300438A3E08EEE0340D402620A0803108E011D000000006219080610CD3D1D000000002D000070C13D807AA3BC45DB44093E6214080410D03D1D000000003D76401CBE45E0E2F5BC6219080410D33D1D000000002D00001CC33D722302BE45F054873D6219080310CF3D1D000000002D000016C33D4588B6BE45A8B4653DA2011C0800102F1D000000003D84E30142452F1E8A3E4DAAB2694150F1BE029DE86FC6";
+        const parsed = parseInspectLink(CS2Economy, originalLink);
+        for (const sticker of Object.values(parsed.stickers ?? {})) {
+            if (sticker.rotation !== undefined) {
+                expect(sticker.rotation).toBeGreaterThanOrEqual(0);
+                expect(sticker.rotation).toBeLessThanOrEqual(359);
+            }
+        }
+    });
 });
 
 describe("CS2 native hex format (XOR-encoded)", () => {
@@ -200,13 +212,11 @@ describe("CS2 native hex format (XOR-encoded)", () => {
 
     test("link 1 parses without throwing", () => {
         const result = parseInspectLink(CS2Economy, CS2_NATIVE_LINK_1);
-        console.log(result);
         expect(result.id).toBeDefined();
     });
 
     test("link 2 parses without throwing", () => {
         const result = parseInspectLink(CS2Economy, CS2_NATIVE_LINK_2);
-        console.log(result);
         expect(result.id).toBeDefined();
     });
 });

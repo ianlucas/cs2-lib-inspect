@@ -24,6 +24,7 @@ export interface CS2GCInventoryItemSticker {
     rotation?: number;
     offsetX?: number;
     offsetY?: number;
+    offsetZ?: number;
     tintId?: number;
     pattern?: number;
 }
@@ -83,7 +84,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
             keychains:
                 economyItem.hasKeychains() && keychains.length > 0
                     ? Object.fromEntries(
-                          keychains.map(({ offsetX, offsetY, pattern, slot, stickerId }) => [
+                          keychains.map(({ offsetX, offsetY, offsetZ, pattern, slot, stickerId }) => [
                               slot,
                               {
                                   id: ensure(
@@ -92,7 +93,8 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                                   ),
                                   seed: pattern,
                                   x: offsetX,
-                                  y: offsetY
+                                  y: offsetY,
+                                  z: offsetZ
                               }
                           ])
                       )
@@ -107,7 +109,8 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                                       economy.itemsAsArray.find((item) => item.isSticker() && item.index === stickerId)
                                           ?.id
                                   ),
-                                  rotation: rotation !== undefined ? Math.trunc(rotation) : undefined,
+                                  rotation:
+                                      rotation !== undefined ? ((Math.trunc(rotation) % 360) + 360) % 360 : undefined,
                                   schema: slot,
                                   wear: wear !== undefined ? truncate(wear, CS2_STICKER_WEAR_FACTOR) : undefined,
                                   x: offsetX,
