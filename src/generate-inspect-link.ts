@@ -54,9 +54,10 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                   : baseAttributes.stickers,
         keychains:
             keychains !== undefined
-                ? item.someKeychains().map(([slot, { id, x, y, seed }]) => ({
+                ? item.someKeychains().map(([slot, { id, x, y, z, seed }]) => ({
                       offsetX: x,
                       offsetY: y,
+                      offsetZ: z,
                       pattern: seed,
                       slot,
                       stickerId: item.economy.getById(id).index
