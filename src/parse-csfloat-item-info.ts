@@ -11,9 +11,9 @@ export interface CSFloatStickerInfo {
     stickerId: number;
     wear?: number;
     rotation?: number;
-    offsetX?: number;
-    offsetY?: number;
-    offsetZ?: number;
+    offset_x?: number;
+    offset_y?: number;
+    offset_z?: number;
     tintId?: number;
     pattern?: number;
 }
@@ -56,7 +56,17 @@ export function parseCSFloatItemInfo(economy: CS2EconomyInstance, itemInfo: CSFl
         killeatervalue: itemInfo.killeatervalue,
         customname: itemInfo.customname,
         musicindex: itemInfo.musicindex,
-        stickers: itemInfo.stickers ?? [],
-        keychains: itemInfo.keychains ?? []
+        stickers: (itemInfo.stickers ?? []).map(({ offset_x, offset_y, offset_z, ...rest }) => ({
+            ...rest,
+            offsetX: offset_x,
+            offsetY: offset_y,
+            offsetZ: offset_z
+        })),
+        keychains: (itemInfo.keychains ?? []).map(({ offset_x, offset_y, offset_z, ...rest }) => ({
+            ...rest,
+            offsetX: offset_x,
+            offsetY: offset_y,
+            offsetZ: offset_z
+        }))
     });
 }
