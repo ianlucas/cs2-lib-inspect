@@ -18,7 +18,7 @@
     "scripts": {
         "docs": "typedoc --out docs src/index.ts",
         "format": "prettier . --write",
-        "generate:protobufs": "npx protoc --ts_out ./src/Protobufs --proto_path src/Protobufs src/Protobufs/cstrike15_gcmessages.proto",
+        "generate:protobufs": "npx protoc --experimental_allow_proto3_optional --ts_out ./src/Protobufs --proto_path src/Protobufs src/Protobufs/cstrike15_gcmessages.proto",
         "prepack": "([ -d dist ] && rm -rf dist); tsc",
         "test": "vitest --run --testTimeout 120000",
         "typecheck": "tsc --noEmit",

@@ -249,6 +249,30 @@ describe("parseCSFloatItemInfo", () => {
         expect(result.keychains?.[0]?.seed).toBe(47830);
     });
 
+    test("weapon with sticker slab keychain (wrapped_sticker)", () => {
+        const weapon = ensure(CS2Economy.itemsAsArray.find((item) => item.def === 7 && item.index === 44));
+        const stickerSlab = ensure(
+            CS2Economy.itemsAsArray.find((item) => item.def === 1355 && item.index === 37 && item.stickerId === 7249)
+        );
+        const result = parseCSFloatItemInfo(CS2Economy, {
+            defindex: ensure(weapon.def),
+            paintindex: weapon.index,
+            floatvalue: 0.08583386242389679,
+            paintseed: 317,
+            keychains: [
+                {
+                    stickerId: 37,
+                    slot: 0,
+                    offset_x: 7.291833,
+                    offset_y: 0.79622614,
+                    offset_z: 1.4955186,
+                    wrapped_sticker: 7249
+                }
+            ]
+        });
+        expect(result.keychains?.[0]?.id).toBe(stickerSlab.id);
+    });
+
     test("stickers use array index as key and slot as schema", () => {
         const weapon = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const sticker = CS2Economy.getById(FALLEN_COLOGNE_2015_ID);

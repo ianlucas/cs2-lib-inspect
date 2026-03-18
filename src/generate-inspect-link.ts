@@ -17,7 +17,7 @@ function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBl
     const hasKeychains = item.isKeychain();
     return {
         defindex: def,
-        keychains: hasKeychains ? [{ stickerId: index, slot: 0 }] : [],
+        keychains: hasKeychains ? [{ stickerId: index, slot: 0, wrappedSticker: item.stickerId }] : [],
         musicindex: item.isMusicKit() ? index : undefined,
         paintindex: hasPaintIndex ? index : undefined,
         paintseed: item.hasSeed() ? CS2_MIN_SEED : undefined,
@@ -54,14 +54,18 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                   : baseAttributes.stickers,
         keychains:
             keychains !== undefined
-                ? item.someKeychains().map(([slot, { id, x, y, z, seed }]) => ({
-                      offsetX: x,
-                      offsetY: y,
-                      offsetZ: z,
-                      pattern: seed,
-                      slot,
-                      stickerId: item.economy.getById(id).index
-                  }))
+                ? item.someKeychains().map(([slot, { id, x, y, z, seed }]) => {
+                      const keychainItem = item.economy.getById(id);
+                      return {
+                          offsetX: x,
+                          offsetY: y,
+                          offsetZ: z,
+                          pattern: seed,
+                          slot,
+                          stickerId: keychainItem.index,
+                          wrappedSticker: keychainItem.stickerId
+                      };
+                  })
                 : item.isKeychain()
                   ? baseAttributes.keychains.map((keychain) => {
                         keychain.pattern = seed;
