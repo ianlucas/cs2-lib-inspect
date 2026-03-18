@@ -17,7 +17,7 @@ function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBl
     const hasKeychains = item.isKeychain();
     return {
         defindex: def,
-        keychains: hasKeychains ? [{ stickerId: index, slot: 0, wrappedSticker: item.stickerId }] : [],
+        keychains: hasKeychains ? [{ stickerId: index, slot: 0, wrappedSticker: item.stickerIndex }] : [],
         musicindex: item.isMusicKit() ? index : undefined,
         paintindex: hasPaintIndex ? index : undefined,
         paintseed: item.hasSeed() ? CS2_MIN_SEED : undefined,
@@ -63,7 +63,7 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                           pattern: seed,
                           slot,
                           stickerId: keychainItem.index,
-                          wrappedSticker: keychainItem.stickerId
+                          wrappedSticker: keychainItem.stickerIndex
                       };
                   })
                 : item.isKeychain()
