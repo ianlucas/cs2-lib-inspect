@@ -6,6 +6,7 @@
 import {
     type CS2BaseInventoryItem,
     CS2EconomyInstance,
+    CS2_MIN_KEYCHAIN_SEED,
     CS2_MIN_SEED,
     CS2_MIN_STICKER_WEAR,
     CS2_MIN_WEAR,
@@ -67,7 +68,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                 (item) =>
                     item.def === defindex &&
                     item.index === keychains[0].stickerId &&
-                    item.stickerId === keychains[0].wrappedSticker
+                    item.stickerIndex === keychains[0].wrappedSticker
             );
         } else if (paintindex !== undefined) {
             economyItem = economy.itemsAsArray.find((item) => item.def === defindex && item.index === paintindex);
@@ -96,7 +97,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                                           (item) =>
                                               item.isKeychain() &&
                                               item.index === stickerId &&
-                                              item.stickerId === wrappedSticker
+                                              item.stickerIndex === wrappedSticker
                                       )?.id
                                   ),
                                   seed: pattern,
@@ -153,6 +154,13 @@ function stripMinValues(item: CS2BaseInventoryItem): CS2BaseInventoryItem {
         for (const sticker of Object.values(item.stickers)) {
             if (sticker.wear === CS2_MIN_STICKER_WEAR) {
                 sticker.wear = undefined;
+            }
+        }
+    }
+    if (item.keychains !== undefined) {
+        for (const keychain of Object.values(item.keychains)) {
+            if (keychain.seed === CS2_MIN_KEYCHAIN_SEED) {
+                keychain.seed = undefined;
             }
         }
     }

@@ -194,13 +194,13 @@ describe("parseInspectLink", () => {
         const item = CS2Economy.getById(result.id);
         expect(item.def).toBe(1355);
         expect(item.index).toBe(37);
-        expect(item.stickerId).toBeDefined();
+        expect(item.stickerIndex).toBeDefined();
     });
 
     test("standalone sticker slab roundtrip (generate → parse → same id)", () => {
         const stickerSlab = ensure(
             CS2Economy.itemsAsArray.find(
-                (item) => item.def === 1355 && item.index === 37 && item.stickerId !== undefined
+                (item) => item.def === 1355 && item.index === 37 && item.stickerIndex !== undefined
             )
         );
         const link = generateInspectLink(stickerSlab);
@@ -217,12 +217,12 @@ describe("parseInspectLink", () => {
         const keychainItem = CS2Economy.getById(ensure(keychainId));
         expect(keychainItem.def).toBe(1355);
         expect(keychainItem.index).toBe(37);
-        expect(keychainItem.stickerId).toBeDefined();
+        expect(keychainItem.stickerIndex).toBeDefined();
     });
 
     test("weapon with sticker slab keychain roundtrip", () => {
         const stickerSlab = ensure(
-            CS2Economy.itemsAsArray.find((item) => item.def === 1355 && item.index === 37 && item.stickerId === 7249)
+            CS2Economy.itemsAsArray.find((item) => item.def === 1355 && item.index === 37 && item.stickerIndex === 7249)
         );
         const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
         inventory.add({

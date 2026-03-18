@@ -252,7 +252,7 @@ describe("parseCSFloatItemInfo", () => {
     test("weapon with sticker slab keychain (wrapped_sticker)", () => {
         const weapon = ensure(CS2Economy.itemsAsArray.find((item) => item.def === 7 && item.index === 44));
         const stickerSlab = ensure(
-            CS2Economy.itemsAsArray.find((item) => item.def === 1355 && item.index === 37 && item.stickerId === 7249)
+            CS2Economy.itemsAsArray.find((item) => item.def === 1355 && item.index === 37 && item.stickerIndex === 7249)
         );
         const result = parseCSFloatItemInfo(CS2Economy, {
             defindex: ensure(weapon.def),
