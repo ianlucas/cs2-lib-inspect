@@ -27,6 +27,7 @@ export interface CS2GCInventoryItemSticker {
     offsetZ?: number;
     tintId?: number;
     pattern?: number;
+    wrappedSticker?: number;
 }
 
 export interface CS2GCInventoryItem {
@@ -63,7 +64,10 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
     } else {
         if (economyItem?.isKeychain() && keychains.length > 0) {
             economyItem = economy.itemsAsArray.find(
-                (item) => item.def === defindex && item.index === keychains[0].stickerId
+                (item) =>
+                    item.def === defindex &&
+                    item.index === keychains[0].stickerId &&
+                    item.stickerId === keychains[0].wrappedSticker
             );
         } else if (paintindex !== undefined) {
             economyItem = economy.itemsAsArray.find((item) => item.def === defindex && item.index === paintindex);
@@ -84,12 +88,16 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
             keychains:
                 economyItem.hasKeychains() && keychains.length > 0
                     ? Object.fromEntries(
-                          keychains.map(({ offsetX, offsetY, offsetZ, pattern, slot, stickerId }) => [
+                          keychains.map(({ offsetX, offsetY, offsetZ, pattern, slot, stickerId, wrappedSticker }) => [
                               slot,
                               {
                                   id: ensure(
-                                      economy.itemsAsArray.find((item) => item.isKeychain() && item.index === stickerId)
-                                          ?.id
+                                      economy.itemsAsArray.find(
+                                          (item) =>
+                                              item.isKeychain() &&
+                                              item.index === stickerId &&
+                                              item.stickerId === wrappedSticker
+                                      )?.id
                                   ),
                                   seed: pattern,
                                   x: offsetX,
