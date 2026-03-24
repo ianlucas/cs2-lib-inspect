@@ -28,7 +28,7 @@
         "@protobuf-ts/runtime": "^2.11.1",
         "buffer": "^6.0.3",
         "crc-32": "^1.2.2",
-        "vitest": "^4.1.0"
+        "vitest": "^4.1.1"
     },
     "peerDependencies": {
         "@ianlucas/cs2-lib": "^7.0.0"
@@ -37,7 +37,7 @@
         "@protobuf-ts/plugin": "^2.11.1",
         "@total-typescript/tsconfig": "^1.0.4",
         "prettier": "^3.8.1",
-        "typedoc": "^0.28.17",
+        "typedoc": "^0.28.18",
         "typescript": "^5.9.3"
     },
     "engines": {
