@@ -2,7 +2,7 @@
     "extends": "@total-typescript/tsconfig/tsc/dom/library",
     "include": ["src/index.ts"],
     "compilerOptions": {
-        "rootDir": ".",
+        "rootDir": "./src",
         "noImplicitOverride": false,
         "noUncheckedIndexedAccess": false,
         "outDir": "dist"
