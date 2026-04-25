@@ -1,7 +1,9 @@
 .git
 .github
+.claude
+.codex
 .gitignore
 .prettierignore
 .prettierrc
-src
+/src
 tsconfig.json

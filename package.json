@@ -15,6 +15,9 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "sideEffects": false,
+    "files": [
+        "dist"
+    ],
     "scripts": {
         "docs": "typedoc --out docs src/index.ts",
         "format": "prettier . --write",
