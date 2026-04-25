@@ -8,6 +8,7 @@ import {
     CS2EconomyInstance,
     CS2_MIN_KEYCHAIN_SEED,
     CS2_MIN_SEED,
+    CS2_MIN_STICKER_ROTATION,
     CS2_MIN_STICKER_WEAR,
     CS2_MIN_WEAR,
     CS2_STICKER_WEAR_FACTOR,
@@ -154,6 +155,9 @@ function stripMinValues(item: CS2BaseInventoryItem): CS2BaseInventoryItem {
         for (const sticker of Object.values(item.stickers)) {
             if (sticker.wear === CS2_MIN_STICKER_WEAR) {
                 sticker.wear = undefined;
+            }
+            if (sticker.rotation === CS2_MIN_STICKER_ROTATION) {
+                sticker.rotation = undefined;
             }
         }
     }
