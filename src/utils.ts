@@ -20,3 +20,7 @@ export function bytesToFloat(byteValue: number) {
 export function truncate(value: number, factor: number) {
     return parseFloat(String(value).substring(0, String(factor).length));
 }
+
+export function clamp(value: number, min: number, max: number) {
+    return Math.min(Math.max(value, min), max);
+}

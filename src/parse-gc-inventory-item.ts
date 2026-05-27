@@ -6,6 +6,9 @@
 import {
     type CS2BaseInventoryItem,
     CS2EconomyInstance,
+    CS2_MAX_KEYCHAIN_SEED,
+    CS2_MAX_STICKER_ROTATION,
+    CS2_MAX_STICKER_WEAR,
     CS2_MIN_KEYCHAIN_SEED,
     CS2_MIN_SEED,
     CS2_MIN_STICKER_ROTATION,
@@ -17,7 +20,7 @@ import {
     ensure
 } from "@ianlucas/cs2-lib";
 import { CS2_PREVIEW_HAS_STICKERS } from "./constants.js";
-import { truncate } from "./utils.js";
+import { clamp, truncate } from "./utils.js";
 
 export interface CS2GCInventoryItemSticker {
     slot?: number;
@@ -76,15 +79,23 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
         }
         assert(economyItem !== undefined);
         if (economyItem.isKeychain()) {
+            const seed = keychains[0]?.pattern ?? paintseed;
             return stripMinValues({
                 id: economyItem.id,
-                seed: keychains[0]?.pattern ?? paintseed
+                seed: seed !== undefined ? clamp(seed, CS2_MIN_KEYCHAIN_SEED, CS2_MAX_KEYCHAIN_SEED) : undefined
             });
         }
         return stripMinValues({
             id: economyItem.id,
             seed: economyItem.hasSeed() ? paintseed : undefined,
-            wear: economyItem.hasWear() && floatvalue !== undefined ? truncate(floatvalue, CS2_WEAR_FACTOR) : undefined,
+            wear:
+                economyItem.hasWear() && floatvalue !== undefined
+                    ? clamp(
+                          truncate(floatvalue, CS2_WEAR_FACTOR),
+                          economyItem.getMinimumWear(),
+                          economyItem.getMaximumWear()
+                      )
+                    : undefined,
             statTrak: economyItem.hasStatTrak() ? killeatervalue : undefined,
             nameTag: economyItem.hasNametag() ? customname : undefined,
             keychains:
@@ -101,7 +112,10 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                                               item.stickerIndex === wrappedSticker
                                       )?.id
                                   ),
-                                  seed: pattern,
+                                  seed:
+                                      pattern !== undefined
+                                          ? clamp(pattern, CS2_MIN_KEYCHAIN_SEED, CS2_MAX_KEYCHAIN_SEED)
+                                          : undefined,
                                   x: offsetX,
                                   y: offsetY,
                                   z: offsetZ
@@ -120,9 +134,22 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                                           ?.id
                                   ),
                                   rotation:
-                                      rotation !== undefined ? ((Math.trunc(rotation) % 360) + 360) % 360 : undefined,
+                                      rotation !== undefined
+                                          ? clamp(
+                                                ((Math.trunc(rotation) % 360) + 360) % 360,
+                                                CS2_MIN_STICKER_ROTATION,
+                                                CS2_MAX_STICKER_ROTATION
+                                            )
+                                          : undefined,
                                   schema: slot,
-                                  wear: wear !== undefined ? truncate(wear, CS2_STICKER_WEAR_FACTOR) : undefined,
+                                  wear:
+                                      wear !== undefined
+                                          ? clamp(
+                                                truncate(wear, CS2_STICKER_WEAR_FACTOR),
+                                                CS2_MIN_STICKER_WEAR,
+                                                CS2_MAX_STICKER_WEAR
+                                            )
+                                          : undefined,
                                   x: offsetX,
                                   y: offsetY
                               }
