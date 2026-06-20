@@ -19,7 +19,7 @@ const BLOODHOUND_ID = 8569;
 const GUT_KNIFE_BASE_ID = 40;
 const KARAMBIT_BASE_ID = 41;
 
-CS2Economy.use({ items: CS2_ITEMS, language: english });
+CS2Economy.load({ items: CS2_ITEMS, language: english });
 
 describe("parseCSFloatItemInfo", () => {
     test("economy item (no wear/seed)", () => {
@@ -252,7 +252,9 @@ describe("parseCSFloatItemInfo", () => {
     test("weapon with sticker slab keychain (wrapped_sticker)", () => {
         const weapon = ensure(CS2Economy.itemsAsArray.find((item) => item.def === 7 && item.index === 44));
         const stickerSlab = ensure(
-            CS2Economy.itemsAsArray.find((item) => item.def === 1355 && item.index === 37 && item.stickerIndex === 7249)
+            CS2Economy.itemsAsArray.find(
+                (item) => item.def === 1355 && item.index === 37 && item.wrappedSticker?.index === 7249
+            )
         );
         const result = parseCSFloatItemInfo(CS2Economy, {
             defindex: ensure(weapon.def),

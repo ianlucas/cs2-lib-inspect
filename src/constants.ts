@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CS2ItemType, type CS2ItemTypeValues, CS2RarityColor } from "@ianlucas/cs2-lib";
+import { CS2ItemType, CS2RarityColor } from "@ianlucas/cs2-lib";
 
 export const CS2PreviewRarity = {
     [CS2RarityColor.Default]: 0,
@@ -16,13 +16,9 @@ export const CS2PreviewRarity = {
     [CS2RarityColor.Immortal]: 7
 };
 
-export const CS2_PREVIEW_HAS_STICKERS: CS2ItemTypeValues[] = [
-    CS2ItemType.Graffiti,
-    CS2ItemType.Patch,
-    CS2ItemType.Sticker
-];
+export const CS2_PREVIEW_HAS_STICKERS: CS2ItemType[] = [CS2ItemType.Graffiti, CS2ItemType.Patch, CS2ItemType.Sticker];
 
-export const CS2_PREVIEW_INSPECTABLE_ITEMS: CS2ItemTypeValues[] = [
+export const CS2_PREVIEW_INSPECTABLE_ITEMS: CS2ItemType[] = [
     CS2ItemType.Agent,
     CS2ItemType.Collectible,
     CS2ItemType.Container,
@@ -36,7 +32,7 @@ export const CS2_PREVIEW_INSPECTABLE_ITEMS: CS2ItemTypeValues[] = [
     CS2ItemType.Weapon
 ];
 
-export const CS2_PREVIEW_ATTRIBUTELESS_ITEMS: CS2ItemTypeValues[] = [
+export const CS2_PREVIEW_ATTRIBUTELESS_ITEMS: CS2ItemType[] = [
     ...CS2_PREVIEW_HAS_STICKERS,
     CS2ItemType.Collectible,
     CS2ItemType.Keychain,

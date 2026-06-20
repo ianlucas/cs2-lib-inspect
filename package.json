@@ -22,7 +22,7 @@
         "docs": "typedoc --out docs src/index.ts",
         "format": "prettier . --write",
         "generate:protobufs": "npx protoc --experimental_allow_proto3_optional --ts_out ./src/Protobufs --proto_path src/Protobufs src/Protobufs/cstrike15_gcmessages.proto",
-        "prepack": "([ -d dist ] && rm -rf dist); tsc",
+        "prepack": "([ -d dist ] && rm -rf dist); tsc -p tsconfig.build.json",
         "test": "vitest --run --testTimeout 120000",
         "typecheck": "tsc --noEmit",
         "upgrade": "npx npm-check-updates@latest --target minor -u"
@@ -34,7 +34,7 @@
         "vitest": "^4.1.8"
     },
     "peerDependencies": {
-        "@ianlucas/cs2-lib": "^7.0.0"
+        "@ianlucas/cs2-lib": "^8.0.0-rc.3"
     },
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.11.1",

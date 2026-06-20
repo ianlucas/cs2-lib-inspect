@@ -3,7 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CS2Economy, CS2Inventory, CS2_ITEMS, ensure } from "@ianlucas/cs2-lib";
+import {
+    CS2Economy,
+    CS2Inventory,
+    CS2_ITEMS,
+    CS2_MAX_STICKER_ROTATION,
+    CS2_MIN_STICKER_ROTATION,
+    ensure
+} from "@ianlucas/cs2-lib";
 import { english } from "@ianlucas/cs2-lib/translations";
 import { describe, expect, test } from "vitest";
 import { generateInspectLink } from "./generate-inspect-link.js";
@@ -18,7 +25,7 @@ const BLOODY_DARRYL_THE_STRAPPED_ID = 8657;
 const FALLEN_COLOGNE_2015_ID = 2226;
 const BLOODHOUND_ID = 8569;
 
-CS2Economy.use({ items: CS2_ITEMS, language: english });
+CS2Economy.load({ items: CS2_ITEMS, language: english });
 
 function roundtrip(item: Parameters<typeof generateInspectLink>[0]) {
     const link = generateInspectLink(item);
@@ -194,13 +201,13 @@ describe("parseInspectLink", () => {
         const item = CS2Economy.getById(result.id);
         expect(item.def).toBe(1355);
         expect(item.index).toBe(37);
-        expect(item.stickerIndex).toBeDefined();
+        expect(item.wrappedSticker?.index).toBeDefined();
     });
 
     test("standalone sticker slab roundtrip (generate → parse → same id)", () => {
         const stickerSlab = ensure(
             CS2Economy.itemsAsArray.find(
-                (item) => item.def === 1355 && item.index === 37 && item.stickerIndex !== undefined
+                (item) => item.def === 1355 && item.index === 37 && item.wrappedSticker?.index !== undefined
             )
         );
         const link = generateInspectLink(stickerSlab);
@@ -217,12 +224,14 @@ describe("parseInspectLink", () => {
         const keychainItem = CS2Economy.getById(ensure(keychainId));
         expect(keychainItem.def).toBe(1355);
         expect(keychainItem.index).toBe(37);
-        expect(keychainItem.stickerIndex).toBeDefined();
+        expect(keychainItem.wrappedSticker?.index).toBeDefined();
     });
 
     test("weapon with sticker slab keychain roundtrip", () => {
         const stickerSlab = ensure(
-            CS2Economy.itemsAsArray.find((item) => item.def === 1355 && item.index === 37 && item.stickerIndex === 7249)
+            CS2Economy.itemsAsArray.find(
+                (item) => item.def === 1355 && item.index === 37 && item.wrappedSticker?.index === 7249
+            )
         );
         const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
         inventory.add({
@@ -234,14 +243,14 @@ describe("parseInspectLink", () => {
         expect(result.keychains?.[0]?.id).toBe(stickerSlab.id);
     });
 
-    test("sticker negative rotation is normalized to 0-359", () => {
+    test("sticker rotation is normalized to -180..180", () => {
         const originalLink =
             "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%2000181020B5022807300438A3E08EEE0340D402620A0803108E011D000000006219080610CD3D1D000000002D000070C13D807AA3BC45DB44093E6214080410D03D1D000000003D76401CBE45E0E2F5BC6219080410D33D1D000000002D00001CC33D722302BE45F054873D6219080310CF3D1D000000002D000016C33D4588B6BE45A8B4653DA2011C0800102F1D000000003D84E30142452F1E8A3E4DAAB2694150F1BE029DE86FC6";
         const parsed = parseInspectLink(CS2Economy, originalLink);
         for (const sticker of Object.values(parsed.stickers ?? {})) {
             if (sticker.rotation !== undefined) {
-                expect(sticker.rotation).toBeGreaterThanOrEqual(0);
-                expect(sticker.rotation).toBeLessThanOrEqual(359);
+                expect(sticker.rotation).toBeGreaterThanOrEqual(CS2_MIN_STICKER_ROTATION);
+                expect(sticker.rotation).toBeLessThanOrEqual(CS2_MAX_STICKER_ROTATION);
             }
         }
     });

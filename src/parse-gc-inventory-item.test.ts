@@ -16,7 +16,7 @@ import { english } from "@ianlucas/cs2-lib/translations";
 import { describe, expect, test } from "vitest";
 import { type CS2GCInventoryItem, parseGCInventoryItem } from "./parse-gc-inventory-item.js";
 
-CS2Economy.use({ items: CS2_ITEMS, language: english });
+CS2Economy.load({ items: CS2_ITEMS, language: english });
 
 const BROKEN_FANG_GLOVES_JADE_ID = 1707; // def 4725, index 10085, wear [0.06, 0.8]
 const GLOVES_DEFINDEX = 4725;
@@ -112,7 +112,8 @@ describe("parseGCInventoryItem keychain clamping", () => {
 
     test("out-of-range keychain item seed is clamped to max", () => {
         const economyItem = CS2Economy.itemsAsArray.find(
-            (item) => item.isKeychain() && item.index === LIL_AVA_KEYCHAIN_INDEX && item.stickerIndex === undefined
+            (item) =>
+                item.isKeychain() && item.index === LIL_AVA_KEYCHAIN_INDEX && item.wrappedSticker?.index === undefined
         )!;
         const result = parseGCInventoryItem(
             CS2Economy,
@@ -127,7 +128,8 @@ describe("parseGCInventoryItem keychain clamping", () => {
 
     test("below-min keychain item seed is clamped then stripped to undefined", () => {
         const economyItem = CS2Economy.itemsAsArray.find(
-            (item) => item.isKeychain() && item.index === LIL_AVA_KEYCHAIN_INDEX && item.stickerIndex === undefined
+            (item) =>
+                item.isKeychain() && item.index === LIL_AVA_KEYCHAIN_INDEX && item.wrappedSticker?.index === undefined
         )!;
         const result = parseGCInventoryItem(
             CS2Economy,

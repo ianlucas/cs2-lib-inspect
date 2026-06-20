@@ -11,7 +11,6 @@ import {
     CS2_MAX_STICKER_WEAR,
     CS2_MIN_KEYCHAIN_SEED,
     CS2_MIN_SEED,
-    CS2_MIN_STICKER_ROTATION,
     CS2_MIN_STICKER_WEAR,
     CS2_MIN_WEAR,
     CS2_STICKER_WEAR_FACTOR,
@@ -72,7 +71,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                 (item) =>
                     item.def === defindex &&
                     item.index === keychains[0].stickerId &&
-                    item.stickerIndex === keychains[0].wrappedSticker
+                    item.wrappedSticker?.index === keychains[0].wrappedSticker
             );
         } else if (paintindex !== undefined) {
             economyItem = economy.itemsAsArray.find((item) => item.def === defindex && item.index === paintindex);
@@ -97,7 +96,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                       )
                     : undefined,
             statTrak: economyItem.hasStatTrak() ? killeatervalue : undefined,
-            nameTag: economyItem.hasNametag() ? customname : undefined,
+            nameTag: economyItem.hasNameTag() ? customname : undefined,
             keychains:
                 economyItem.hasKeychains() && keychains.length > 0
                     ? Object.fromEntries(
@@ -109,7 +108,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                                           (item) =>
                                               item.isKeychain() &&
                                               item.index === stickerId &&
-                                              item.stickerIndex === wrappedSticker
+                                              item.wrappedSticker?.index === wrappedSticker
                                       )?.id
                                   ),
                                   seed:
@@ -133,14 +132,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                                       economy.itemsAsArray.find((item) => item.isSticker() && item.index === stickerId)
                                           ?.id
                                   ),
-                                  rotation:
-                                      rotation !== undefined
-                                          ? clamp(
-                                                ((Math.trunc(rotation) % 360) + 360) % 360,
-                                                CS2_MIN_STICKER_ROTATION,
-                                                CS2_MAX_STICKER_ROTATION
-                                            )
-                                          : undefined,
+                                  rotation: rotation !== undefined ? normalizeStickerRotation(rotation) : undefined,
                                   schema: slot,
                                   wear:
                                       wear !== undefined
@@ -171,6 +163,13 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
     }
 }
 
+function normalizeStickerRotation(rotation: number): number {
+    // Wrap to the in-game [-180, 180] range; legacy 0–359 and out-of-range values
+    // collapse to the equivalent signed angle. Mirrors cs2-lib CS2Inventory healing.
+    const normalized = ((Math.trunc(rotation) % 360) + 360) % 360; // [0, 359]
+    return normalized > CS2_MAX_STICKER_ROTATION ? normalized - 360 : normalized; // [-179, 180]
+}
+
 function stripMinValues(item: CS2BaseInventoryItem): CS2BaseInventoryItem {
     if (item.seed === CS2_MIN_SEED) {
         item.seed = undefined;
@@ -183,7 +182,7 @@ function stripMinValues(item: CS2BaseInventoryItem): CS2BaseInventoryItem {
             if (sticker.wear === CS2_MIN_STICKER_WEAR) {
                 sticker.wear = undefined;
             }
-            if (sticker.rotation === CS2_MIN_STICKER_ROTATION) {
+            if (sticker.rotation === 0) {
                 sticker.rotation = undefined;
             }
         }
