@@ -5,6 +5,7 @@
 
 import {
     CS2Economy,
+    CS2Inventory,
     CS2_ITEMS,
     CS2_MAX_KEYCHAIN_SEED,
     CS2_MAX_STICKER_ROTATION,
@@ -26,6 +27,9 @@ const AWP_DEFINDEX = 9;
 const AWP_PAINTINDEX = 344;
 const FALLEN_COLOGNE_STICKER_INDEX = 395; // sticker id 2226
 const LIL_AVA_KEYCHAIN_INDEX = 1; // keychain id 13113, def 1355
+const DEAGLE_URBAN_DDPAT_ID = 66; // def 1, index 17; sticker offset X [-0.6436, 0.5803], Y [-0.1982, 0.3346]
+const DEAGLE_DEFINDEX = 1;
+const DEAGLE_PAINTINDEX = 17;
 
 function gcItem(overrides: Partial<CS2GCInventoryItem>): CS2GCInventoryItem {
     return { defindex: 0, stickers: [], keychains: [], ...overrides };
@@ -93,6 +97,52 @@ describe("parseGCInventoryItem sticker clamping", () => {
         );
         // CS2_MIN_STICKER_WEAR is stripped to undefined by stripMinValues.
         expect(result.stickers?.[0]?.wear).toBe(CS2_MIN_STICKER_WEAR === 0 ? undefined : CS2_MIN_STICKER_WEAR);
+    });
+});
+
+describe("parseGCInventoryItem sticker offset healing", () => {
+    test("off-grid sticker offset is truncated onto the CS2_STICKER_OFFSET_FACTOR grid", () => {
+        const result = parseGCInventoryItem(
+            CS2Economy,
+            gcItem({
+                defindex: DEAGLE_DEFINDEX,
+                paintindex: DEAGLE_PAINTINDEX,
+                stickers: [
+                    { slot: 0, stickerId: FALLEN_COLOGNE_STICKER_INDEX, offsetX: 0.12345678, offsetY: -0.0511111 }
+                ]
+            })
+        );
+        expect(result.id).toBe(DEAGLE_URBAN_DDPAT_ID);
+        // Both values are within the model envelope, so only grid truncation (4 dp) applies.
+        expect(result.stickers?.[0]?.x).toBe(0.1234);
+        expect(result.stickers?.[0]?.y).toBe(-0.0511);
+    });
+
+    test("out-of-envelope sticker offset is clamped to the model's published bounds", () => {
+        const economyItem = CS2Economy.getById(DEAGLE_URBAN_DDPAT_ID);
+        const result = parseGCInventoryItem(
+            CS2Economy,
+            gcItem({
+                defindex: DEAGLE_DEFINDEX,
+                paintindex: DEAGLE_PAINTINDEX,
+                stickers: [{ slot: 0, stickerId: FALLEN_COLOGNE_STICKER_INDEX, offsetX: 999, offsetY: -999 }]
+            })
+        );
+        expect(result.stickers?.[0]?.x).toBe(economyItem.getMaximumStickerOffsetX());
+        expect(result.stickers?.[0]?.y).toBe(economyItem.getMinimumStickerOffsetY());
+    });
+
+    test("healed offsets satisfy cs2-lib validation (inventory.add does not throw)", () => {
+        const result = parseGCInventoryItem(
+            CS2Economy,
+            gcItem({
+                defindex: DEAGLE_DEFINDEX,
+                paintindex: DEAGLE_PAINTINDEX,
+                stickers: [{ slot: 0, stickerId: FALLEN_COLOGNE_STICKER_INDEX, offsetX: 999, offsetY: -999 }]
+            })
+        );
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        expect(() => inventory.add(result)).not.toThrow();
     });
 });
 

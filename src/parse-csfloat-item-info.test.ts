@@ -179,9 +179,9 @@ describe("parseCSFloatItemInfo", () => {
         const result = parseCSFloatItemInfo(CS2Economy, {
             defindex: ensure(weapon.def),
             paintindex: weapon.index,
-            stickers: [{ slot: 0, stickerId: ensure(sticker.index), wear: 0.16 }]
+            stickers: [{ slot: 0, stickerId: ensure(sticker.index), wear: 0.168 }]
         });
-        expect(result.stickers?.[0]?.wear).toBe(0.1);
+        expect(result.stickers?.[0]?.wear).toBe(0.16);
         const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
         expect(() => inventory.add(result)).not.toThrow();
     });
@@ -241,8 +241,10 @@ describe("parseCSFloatItemInfo", () => {
                 }
             ]
         });
-        expect(result.stickers?.[0]?.x).toBeCloseTo(-0.03321892, 5);
-        expect(result.stickers?.[0]?.y).toBeCloseTo(-0.0012936294, 5);
+        // Sticker offsets are healed onto the CS2_STICKER_OFFSET_FACTOR (0.0001) grid; keychain
+        // offsets have no published per-model bounds and pass through raw.
+        expect(result.stickers?.[0]?.x).toBe(-0.0332);
+        expect(result.stickers?.[0]?.y).toBe(-0.0012);
         expect(result.keychains?.[0]?.x).toBeCloseTo(8.631092, 5);
         expect(result.keychains?.[0]?.y).toBeCloseTo(0.7248813, 5);
         expect(result.keychains?.[0]?.z).toBeCloseTo(2.1417148, 5);

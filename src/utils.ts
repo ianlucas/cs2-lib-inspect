@@ -16,11 +16,3 @@ export function bytesToFloat(byteValue: number) {
     const floatArray = new Float32Array(byteArray.buffer);
     return floatArray[0];
 }
-
-export function truncate(value: number, factor: number) {
-    return parseFloat(String(value).substring(0, String(factor).length));
-}
-
-export function clamp(value: number, min: number, max: number) {
-    return Math.min(Math.max(value, min), max);
-}
