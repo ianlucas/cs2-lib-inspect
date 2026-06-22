@@ -13,13 +13,15 @@ import {
     CS2_MIN_SEED,
     CS2_MIN_STICKER_WEAR,
     CS2_MIN_WEAR,
+    CS2_STICKER_OFFSET_FACTOR,
     CS2_STICKER_WEAR_FACTOR,
     CS2_WEAR_FACTOR,
     assert,
-    ensure
+    clamp,
+    ensure,
+    truncateToFactor
 } from "@ianlucas/cs2-lib";
 import { CS2_PREVIEW_HAS_STICKERS } from "./constants.js";
-import { clamp, truncate } from "./utils.js";
 
 export interface CS2GCInventoryItemSticker {
     slot?: number;
@@ -84,13 +86,19 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                 seed: seed !== undefined ? clamp(seed, CS2_MIN_KEYCHAIN_SEED, CS2_MAX_KEYCHAIN_SEED) : undefined
             });
         }
+        // Per-model sticker offset envelope is constant across this item's slots; resolve it once here
+        // (where `economyItem` is narrowed) so it can be closed over inside the sticker map below.
+        const stickerOffsetXMin = economyItem.getMinimumStickerOffsetX();
+        const stickerOffsetXMax = economyItem.getMaximumStickerOffsetX();
+        const stickerOffsetYMin = economyItem.getMinimumStickerOffsetY();
+        const stickerOffsetYMax = economyItem.getMaximumStickerOffsetY();
         return stripMinValues({
             id: economyItem.id,
             seed: economyItem.hasSeed() ? paintseed : undefined,
             wear:
                 economyItem.hasWear() && floatvalue !== undefined
                     ? clamp(
-                          truncate(floatvalue, CS2_WEAR_FACTOR),
+                          truncateToFactor(floatvalue, CS2_WEAR_FACTOR),
                           economyItem.getMinimumWear(),
                           economyItem.getMaximumWear()
                       )
@@ -137,13 +145,13 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                                   wear:
                                       wear !== undefined
                                           ? clamp(
-                                                truncate(wear, CS2_STICKER_WEAR_FACTOR),
+                                                truncateToFactor(wear, CS2_STICKER_WEAR_FACTOR),
                                                 CS2_MIN_STICKER_WEAR,
                                                 CS2_MAX_STICKER_WEAR
                                             )
                                           : undefined,
-                                  x: offsetX,
-                                  y: offsetY
+                                  x: healStickerOffset(offsetX, stickerOffsetXMin, stickerOffsetXMax),
+                                  y: healStickerOffset(offsetY, stickerOffsetYMin, stickerOffsetYMax)
                               }
                           ])
                       )
@@ -163,9 +171,33 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
     }
 }
 
+// Sticker offsets are deltas from the markup slot's default, stored on the CS2_STICKER_OFFSET_FACTOR
+// grid. Truncate onto that grid (always — so the value satisfies cs2-lib's factor-precision assert even
+// when the model publishes no bounds), then clamp into the model's [min, max] envelope when it does.
+// Mirrors cs2-lib's private healStickerOffset, composed from its newly exported primitives.
+function healStickerOffset(
+    value: number | undefined,
+    min: number | undefined,
+    max: number | undefined
+): number | undefined {
+    if (value === undefined || !Number.isFinite(value)) {
+        return undefined;
+    }
+    value = truncateToFactor(value, CS2_STICKER_OFFSET_FACTOR);
+    if (min !== undefined && value < min) {
+        return min;
+    }
+    if (max !== undefined && value > max) {
+        return max;
+    }
+    return value;
+}
+
 function normalizeStickerRotation(rotation: number): number {
-    // Wrap to the in-game [-180, 180] range; legacy 0–359 and out-of-range values
-    // collapse to the equivalent signed angle. Mirrors cs2-lib CS2Inventory healing.
+    // Wrap to the in-game [-180, 180] range; legacy 0–359 and out-of-range values collapse to the
+    // equivalent signed angle (e.g. 270 -> -90, 9999 -> -81). This deliberately diverges from cs2-lib's
+    // healing, which drops still-out-of-range rotations to undefined — here we wrap-and-preserve so a
+    // parsed link keeps its visual angle.
     const normalized = ((Math.trunc(rotation) % 360) + 360) % 360; // [0, 359]
     return normalized > CS2_MAX_STICKER_ROTATION ? normalized - 360 : normalized; // [-179, 180]
 }
