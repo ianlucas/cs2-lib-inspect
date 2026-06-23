@@ -146,6 +146,71 @@ describe("parseGCInventoryItem sticker offset healing", () => {
     });
 });
 
+describe("parseGCInventoryItem sticker schema healing", () => {
+    // Desert Eagle | Urban DDPAT exposes 4 sticker anchors (getStickerSchemaCount() === 4), fewer than
+    // the 5-deep stack, so a full stack necessarily pushes a GC slot past the model's anchor range.
+    test("a GC slot beyond the model's anchor count is repaired onto a real anchor", () => {
+        expect(CS2Economy.getById(DEAGLE_URBAN_DDPAT_ID).getStickerSchemaCount()).toBe(4);
+        const result = parseGCInventoryItem(
+            CS2Economy,
+            gcItem({
+                defindex: DEAGLE_DEFINDEX,
+                paintindex: DEAGLE_PAINTINDEX,
+                stickers: [
+                    { slot: 0, stickerId: FALLEN_COLOGNE_STICKER_INDEX },
+                    { slot: 1, stickerId: FALLEN_COLOGNE_STICKER_INDEX },
+                    { slot: 2, stickerId: FALLEN_COLOGNE_STICKER_INDEX },
+                    { slot: 3, stickerId: FALLEN_COLOGNE_STICKER_INDEX },
+                    { slot: 4, stickerId: FALLEN_COLOGNE_STICKER_INDEX }
+                ]
+            })
+        );
+        // In-range slots keep their anchor; the out-of-range 5th sticker (slot 4) falls back to the
+        // first free anchor — every anchor is taken, so it shares anchor 0.
+        expect(result.stickers?.[0]?.schema).toBe(0);
+        expect(result.stickers?.[1]?.schema).toBe(1);
+        expect(result.stickers?.[2]?.schema).toBe(2);
+        expect(result.stickers?.[3]?.schema).toBe(3);
+        expect(result.stickers?.[4]?.schema).toBe(0);
+    });
+
+    test("in-range GC slots are preserved as the sticker schema", () => {
+        const result = parseGCInventoryItem(
+            CS2Economy,
+            gcItem({
+                defindex: DEAGLE_DEFINDEX,
+                paintindex: DEAGLE_PAINTINDEX,
+                stickers: [
+                    { slot: 2, stickerId: FALLEN_COLOGNE_STICKER_INDEX },
+                    { slot: 0, stickerId: FALLEN_COLOGNE_STICKER_INDEX }
+                ]
+            })
+        );
+        // Record key is the 0-based stack position; schema is the GC anchor it was sent on.
+        expect(result.stickers?.[0]?.schema).toBe(2);
+        expect(result.stickers?.[1]?.schema).toBe(0);
+    });
+
+    test("healed schema satisfies cs2-lib validation (out-of-range slot would otherwise throw)", () => {
+        const result = parseGCInventoryItem(
+            CS2Economy,
+            gcItem({
+                defindex: DEAGLE_DEFINDEX,
+                paintindex: DEAGLE_PAINTINDEX,
+                stickers: [
+                    { slot: 0, stickerId: FALLEN_COLOGNE_STICKER_INDEX },
+                    { slot: 1, stickerId: FALLEN_COLOGNE_STICKER_INDEX },
+                    { slot: 2, stickerId: FALLEN_COLOGNE_STICKER_INDEX },
+                    { slot: 3, stickerId: FALLEN_COLOGNE_STICKER_INDEX },
+                    { slot: 4, stickerId: FALLEN_COLOGNE_STICKER_INDEX }
+                ]
+            })
+        );
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        expect(() => inventory.validateBaseInventoryItem(result)).not.toThrow();
+    });
+});
+
 describe("parseGCInventoryItem keychain clamping", () => {
     test("over-range nested keychain seed is clamped to max", () => {
         const result = parseGCInventoryItem(
