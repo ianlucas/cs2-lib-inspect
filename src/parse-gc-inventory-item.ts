@@ -5,7 +5,9 @@
 
 import {
     type CS2BaseInventoryItem,
+    type RecordValue,
     CS2EconomyInstance,
+    CS2EconomyItem,
     CS2_MAX_KEYCHAIN_SEED,
     CS2_MAX_STICKER_ROTATION,
     CS2_MAX_STICKER_WEAR,
@@ -13,12 +15,13 @@ import {
     CS2_MIN_SEED,
     CS2_MIN_STICKER_WEAR,
     CS2_MIN_WEAR,
-    CS2_STICKER_OFFSET_FACTOR,
     CS2_STICKER_WEAR_FACTOR,
     CS2_WEAR_FACTOR,
     assert,
     clamp,
     ensure,
+    getNextStickerSchema,
+    healStickerOffset,
     truncateToFactor
 } from "@ianlucas/cs2-lib";
 import { CS2_PREVIEW_HAS_STICKERS } from "./constants.js";
@@ -86,12 +89,6 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                 seed: seed !== undefined ? clamp(seed, CS2_MIN_KEYCHAIN_SEED, CS2_MAX_KEYCHAIN_SEED) : undefined
             });
         }
-        // Per-model sticker offset envelope is constant across this item's slots; resolve it once here
-        // (where `economyItem` is narrowed) so it can be closed over inside the sticker map below.
-        const stickerOffsetXMin = economyItem.getMinimumStickerOffsetX();
-        const stickerOffsetXMax = economyItem.getMaximumStickerOffsetX();
-        const stickerOffsetYMin = economyItem.getMinimumStickerOffsetY();
-        const stickerOffsetYMax = economyItem.getMaximumStickerOffsetY();
         return stripMinValues({
             id: economyItem.id,
             seed: economyItem.hasSeed() ? paintseed : undefined,
@@ -132,29 +129,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                     : undefined,
             stickers:
                 economyItem.hasStickers() && stickers.length > 0
-                    ? Object.fromEntries(
-                          stickers.map(({ slot, stickerId, offsetX, offsetY, wear, rotation }, index) => [
-                              index,
-                              {
-                                  id: ensure(
-                                      economy.itemsAsArray.find((item) => item.isSticker() && item.index === stickerId)
-                                          ?.id
-                                  ),
-                                  rotation: rotation !== undefined ? normalizeStickerRotation(rotation) : undefined,
-                                  schema: slot,
-                                  wear:
-                                      wear !== undefined
-                                          ? clamp(
-                                                truncateToFactor(wear, CS2_STICKER_WEAR_FACTOR),
-                                                CS2_MIN_STICKER_WEAR,
-                                                CS2_MAX_STICKER_WEAR
-                                            )
-                                          : undefined,
-                                  x: healStickerOffset(offsetX, stickerOffsetXMin, stickerOffsetXMax),
-                                  y: healStickerOffset(offsetY, stickerOffsetYMin, stickerOffsetYMax)
-                              }
-                          ])
-                      )
+                    ? parseStickers(economy, economyItem, stickers)
                     : undefined,
             patches:
                 economyItem.hasPatches() && stickers.length > 0
@@ -171,26 +146,39 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
     }
 }
 
-// Sticker offsets are deltas from the markup slot's default, stored on the CS2_STICKER_OFFSET_FACTOR
-// grid. Truncate onto that grid (always — so the value satisfies cs2-lib's factor-precision assert even
-// when the model publishes no bounds), then clamp into the model's [min, max] envelope when it does.
-// Mirrors cs2-lib's private healStickerOffset, composed from its newly exported primitives.
-function healStickerOffset(
-    value: number | undefined,
-    min: number | undefined,
-    max: number | undefined
-): number | undefined {
-    if (value === undefined || !Number.isFinite(value)) {
-        return undefined;
+// Builds the sticker record from GC/inspect data. The record key is the 0-based stack (draw) position
+// and each sticker's `schema` is its physical StickerMarkup anchor. A GC slot outside the model's
+// [0, getStickerSchemaCount()) is repaired onto the first free anchor — mirroring cs2-lib's loader — so
+// the parsed item always satisfies the sticker validator, matching how offsets are already healed.
+function parseStickers(
+    economy: CS2EconomyInstance,
+    economyItem: CS2EconomyItem,
+    stickers: CS2GCInventoryItemSticker[]
+): CS2BaseInventoryItem["stickers"] {
+    const schemaCount = economyItem.getStickerSchemaCount();
+    const offsetXMin = economyItem.getMinimumStickerOffsetX();
+    const offsetXMax = economyItem.getMaximumStickerOffsetX();
+    const offsetYMin = economyItem.getMinimumStickerOffsetY();
+    const offsetYMax = economyItem.getMaximumStickerOffsetY();
+    const parsed: RecordValue<CS2BaseInventoryItem["stickers"]>[] = [];
+    for (const { slot, stickerId, offsetX, offsetY, wear, rotation } of stickers) {
+        let schema = slot ?? parsed.length;
+        if (!Number.isInteger(schema) || schema < 0 || schema >= schemaCount) {
+            schema = getNextStickerSchema(parsed, schemaCount);
+        }
+        parsed.push({
+            id: ensure(economy.itemsAsArray.find((item) => item.isSticker() && item.index === stickerId)?.id),
+            rotation: rotation !== undefined ? normalizeStickerRotation(rotation) : undefined,
+            schema,
+            wear:
+                wear !== undefined
+                    ? clamp(truncateToFactor(wear, CS2_STICKER_WEAR_FACTOR), CS2_MIN_STICKER_WEAR, CS2_MAX_STICKER_WEAR)
+                    : undefined,
+            x: healStickerOffset(offsetX, offsetXMin, offsetXMax),
+            y: healStickerOffset(offsetY, offsetYMin, offsetYMax)
+        });
     }
-    value = truncateToFactor(value, CS2_STICKER_OFFSET_FACTOR);
-    if (min !== undefined && value < min) {
-        return min;
-    }
-    if (max !== undefined && value > max) {
-        return max;
-    }
-    return value;
+    return Object.fromEntries(parsed.map((sticker, index) => [index, sticker]));
 }
 
 function normalizeStickerRotation(rotation: number): number {

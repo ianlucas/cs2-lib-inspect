@@ -34,7 +34,7 @@
         "vitest": "^4.1.8"
     },
     "peerDependencies": {
-        "@ianlucas/cs2-lib": "^8.0.0-rc.5"
+        "@ianlucas/cs2-lib": "^8.0.0-rc.6"
     },
     "devDependencies": {
         "@protobuf-ts/plugin": "^2.11.1",
