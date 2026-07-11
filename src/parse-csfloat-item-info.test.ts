@@ -186,7 +186,7 @@ describe("parseCSFloatItemInfo", () => {
         expect(() => inventory.add(result)).not.toThrow();
     });
 
-    test("sticker rotation is truncated to integer", () => {
+    test("sticker rotation snaps to the half-degree grid", () => {
         const weapon = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const sticker = CS2Economy.getById(FALLEN_COLOGNE_2015_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
@@ -194,7 +194,7 @@ describe("parseCSFloatItemInfo", () => {
             paintindex: weapon.index,
             stickers: [{ slot: 0, stickerId: ensure(sticker.index), rotation: 45.7 }]
         });
-        expect(result.stickers?.[0]?.rotation).toBe(45);
+        expect(result.stickers?.[0]?.rotation).toBe(45.5);
         const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
         expect(() => inventory.add(result)).not.toThrow();
     });
