@@ -22,6 +22,7 @@ import {
     ensure,
     getNextStickerSchema,
     healStickerOffset,
+    snapStickerRotation,
     truncateToFactor
 } from "@ianlucas/cs2-lib";
 import { CS2_PREVIEW_HAS_STICKERS } from "./constants.js";
@@ -182,12 +183,13 @@ function parseStickers(
 }
 
 function normalizeStickerRotation(rotation: number): number {
-    // Wrap to the in-game [-180, 180] range; legacy 0–359 and out-of-range values collapse to the
-    // equivalent signed angle (e.g. 270 -> -90, 9999 -> -81). This deliberately diverges from cs2-lib's
-    // healing, which drops still-out-of-range rotations to undefined — here we wrap-and-preserve so a
-    // parsed link keeps its visual angle.
-    const normalized = ((Math.trunc(rotation) % 360) + 360) % 360; // [0, 359]
-    return normalized > CS2_MAX_STICKER_ROTATION ? normalized - 360 : normalized; // [-179, 180]
+    // Snap onto the half-degree grid, then wrap to the in-game [-180, 180] range; legacy 0–359 and
+    // out-of-range values collapse to the equivalent signed angle (e.g. 270 -> -90, 9999 -> -81,
+    // 359.7 -> -0.5). This deliberately diverges from cs2-lib's healing, which drops
+    // still-out-of-range rotations to undefined — here we wrap-and-preserve so a parsed link keeps
+    // its visual angle.
+    const normalized = ((snapStickerRotation(rotation) % 360) + 360) % 360; // [0, 359.5]
+    return normalized > CS2_MAX_STICKER_ROTATION ? normalized - 360 : normalized; // [-179.5, 180]
 }
 
 function stripMinValues(item: CS2BaseInventoryItem): CS2BaseInventoryItem {

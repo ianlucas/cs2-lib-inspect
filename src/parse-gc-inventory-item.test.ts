@@ -73,6 +73,28 @@ describe("parseGCInventoryItem sticker clamping", () => {
         expect(rotation).toBeLessThanOrEqual(CS2_MAX_STICKER_ROTATION);
     });
 
+    test("sticker rotation snaps to the half-degree grid, preserving the visual angle", () => {
+        const parseRotation = (rotation: number) =>
+            parseGCInventoryItem(
+                CS2Economy,
+                gcItem({
+                    defindex: AWP_DEFINDEX,
+                    paintindex: AWP_PAINTINDEX,
+                    stickers: [{ slot: 0, stickerId: FALLEN_COLOGNE_STICKER_INDEX, rotation }]
+                })
+            ).stickers?.[0]?.rotation;
+        // Half-degree GC values survive intact (previously truncated to whole degrees).
+        expect(parseRotation(2.5)).toBe(2.5);
+        expect(parseRotation(-90.5)).toBe(-90.5);
+        // Off-grid float noise snaps to the nearest half degree.
+        expect(parseRotation(2.7)).toBe(2.5);
+        expect(parseRotation(2.4)).toBe(2.5);
+        // Legacy 0-359 wraps after snapping.
+        expect(parseRotation(270)).toBe(-90);
+        expect(parseRotation(359.5)).toBe(-0.5);
+        expect(parseRotation(359.7)).toBe(-0.5);
+    });
+
     test("over-max sticker wear is clamped to max", () => {
         const result = parseGCInventoryItem(
             CS2Economy,
