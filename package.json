@@ -40,7 +40,7 @@
         "@protobuf-ts/plugin": "^2.11.1",
         "@total-typescript/tsconfig": "^1.0.4",
         "prettier": "^3.9.4",
-        "typedoc": "^0.28.19",
+        "typedoc": "^0.28.20",
         "typescript": "^6.0.3"
     },
     "engines": {
