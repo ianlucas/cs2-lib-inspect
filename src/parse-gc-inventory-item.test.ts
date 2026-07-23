@@ -4,8 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+    type CS2Item,
     CS2Economy,
+    CS2EconomyInstance,
     CS2Inventory,
+    CS2RarityColor,
     CS2_ITEMS,
     CS2_MAX_KEYCHAIN_SEED,
     CS2_MAX_STICKER_ROTATION,
@@ -278,5 +281,93 @@ describe("parseGCInventoryItem keychain clamping", () => {
         // Clamped up to CS2_MIN_KEYCHAIN_SEED, which stripMinValues then drops.
         expect(result.id).toBe(economyItem.id);
         expect(result.seed).toBeUndefined();
+    });
+});
+
+describe("parseGCInventoryItem keychain offset healing", () => {
+    const parseKeychainOffsets = (offsets: { offsetX?: number; offsetY?: number; offsetZ?: number }) =>
+        parseGCInventoryItem(
+            CS2Economy,
+            gcItem({
+                defindex: AWP_DEFINDEX,
+                paintindex: AWP_PAINTINDEX,
+                keychains: [{ slot: 0, stickerId: LIL_AVA_KEYCHAIN_INDEX, ...offsets }]
+            })
+        ).keychains?.[0];
+
+    test("off-grid keychain offset is truncated onto the CS2_KEYCHAIN_OFFSET_FACTOR grid", () => {
+        // All three axes sit inside the AWP's envelope, so only grid truncation (4 dp) applies.
+        const keychain = parseKeychainOffsets({ offsetX: 1.23456789, offsetY: 0.5123456, offsetZ: 5.4321987 });
+        expect(keychain?.x).toBe(1.2345);
+        expect(keychain?.y).toBe(0.5123);
+        expect(keychain?.z).toBe(5.4321);
+    });
+
+    test("out-of-envelope keychain offset is clamped to the model's published bounds", () => {
+        // Stands in for a weapon whose item data publishes a keychain envelope; asserting against a
+        // fixed envelope keeps this meaningful no matter which bounds the shipped items carry.
+        const economy = new CS2EconomyInstance();
+        const items: CS2Item[] = [
+            {
+                base: true,
+                def: AWP_DEFINDEX,
+                free: true,
+                id: 0,
+                keychainOffsetXMax: 41.2865,
+                keychainOffsetXMin: -10.1283,
+                keychainOffsetYMax: 1.3716,
+                keychainOffsetYMin: -0.0176,
+                keychainOffsetZMax: 11.7576,
+                keychainOffsetZMin: 2.6437,
+                rarity: CS2RarityColor.Common,
+                type: "weapon"
+            },
+            {
+                baseId: 0,
+                def: AWP_DEFINDEX,
+                id: 1,
+                index: AWP_PAINTINDEX,
+                rarity: CS2RarityColor.Ancient,
+                type: "weapon"
+            },
+            { def: 1355, id: 2, index: LIL_AVA_KEYCHAIN_INDEX, rarity: CS2RarityColor.Rare, type: "keychain" }
+        ];
+        economy.load({ items, language: { 0: { name: "AWP" }, 1: { name: "AWP | Skin" }, 2: { name: "Charm" } } });
+        const parse = (offsets: object) =>
+            parseGCInventoryItem(economy, {
+                defindex: AWP_DEFINDEX,
+                paintindex: AWP_PAINTINDEX,
+                stickers: [],
+                keychains: [{ slot: 0, stickerId: LIL_AVA_KEYCHAIN_INDEX, ...offsets }]
+            }).keychains?.[0];
+        expect(parse({ offsetX: 9999, offsetY: -9999, offsetZ: 9999 })).toMatchObject({
+            x: 41.2865,
+            y: -0.0176,
+            z: 11.7576
+        });
+        // Charm coordinates are absolute, so a zeroed axis can sit below the envelope floor.
+        expect(parse({ offsetZ: 0 })?.z).toBe(2.6437);
+    });
+
+    test("absent keychain offsets stay absent", () => {
+        const keychain = parseKeychainOffsets({});
+        expect(keychain?.x).toBeUndefined();
+        expect(keychain?.y).toBeUndefined();
+        expect(keychain?.z).toBeUndefined();
+    });
+
+    test("healed keychain offsets satisfy cs2-lib validation (inventory.add does not throw)", () => {
+        const result = parseGCInventoryItem(
+            CS2Economy,
+            gcItem({
+                defindex: AWP_DEFINDEX,
+                paintindex: AWP_PAINTINDEX,
+                keychains: [
+                    { slot: 0, stickerId: LIL_AVA_KEYCHAIN_INDEX, offsetX: 9999, offsetY: -9999, offsetZ: 12.345678 }
+                ]
+            })
+        );
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        expect(() => inventory.add(result)).not.toThrow();
     });
 });

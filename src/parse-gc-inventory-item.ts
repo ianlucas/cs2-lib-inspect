@@ -21,6 +21,7 @@ import {
     clamp,
     ensure,
     getNextStickerSchema,
+    healKeychainOffset,
     healStickerOffset,
     snapStickerRotation,
     truncateToFactor
@@ -105,28 +106,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
             nameTag: economyItem.hasNameTag() ? customname : undefined,
             keychains:
                 economyItem.hasKeychains() && keychains.length > 0
-                    ? Object.fromEntries(
-                          keychains.map(({ offsetX, offsetY, offsetZ, pattern, slot, stickerId, wrappedSticker }) => [
-                              slot,
-                              {
-                                  id: ensure(
-                                      economy.itemsAsArray.find(
-                                          (item) =>
-                                              item.isKeychain() &&
-                                              item.index === stickerId &&
-                                              item.wrappedSticker?.index === wrappedSticker
-                                      )?.id
-                                  ),
-                                  seed:
-                                      pattern !== undefined
-                                          ? clamp(pattern, CS2_MIN_KEYCHAIN_SEED, CS2_MAX_KEYCHAIN_SEED)
-                                          : undefined,
-                                  x: offsetX,
-                                  y: offsetY,
-                                  z: offsetZ
-                              }
-                          ])
-                      )
+                    ? parseKeychains(economy, economyItem, keychains)
                     : undefined,
             stickers:
                 economyItem.hasStickers() && stickers.length > 0
@@ -145,6 +125,42 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                     : undefined
         });
     }
+}
+
+// Builds the keychain record from GC/inspect data. Charm placements arrive as raw absolute
+// markup-space floats carrying more precision than cs2-lib stores, so each axis is snapped onto the
+// keychain offset grid and clamped into the model's published envelope — the same treatment sticker
+// offsets already get — otherwise the parsed item fails cs2-lib's keychain validation.
+function parseKeychains(
+    economy: CS2EconomyInstance,
+    economyItem: CS2EconomyItem,
+    keychains: CS2GCInventoryItemSticker[]
+): CS2BaseInventoryItem["keychains"] {
+    const offsetXMin = economyItem.getMinimumKeychainOffsetX();
+    const offsetXMax = economyItem.getMaximumKeychainOffsetX();
+    const offsetYMin = economyItem.getMinimumKeychainOffsetY();
+    const offsetYMax = economyItem.getMaximumKeychainOffsetY();
+    const offsetZMin = economyItem.getMinimumKeychainOffsetZ();
+    const offsetZMax = economyItem.getMaximumKeychainOffsetZ();
+    return Object.fromEntries(
+        keychains.map(({ offsetX, offsetY, offsetZ, pattern, slot, stickerId, wrappedSticker }) => [
+            slot,
+            {
+                id: ensure(
+                    economy.itemsAsArray.find(
+                        (item) =>
+                            item.isKeychain() &&
+                            item.index === stickerId &&
+                            item.wrappedSticker?.index === wrappedSticker
+                    )?.id
+                ),
+                seed: pattern !== undefined ? clamp(pattern, CS2_MIN_KEYCHAIN_SEED, CS2_MAX_KEYCHAIN_SEED) : undefined,
+                x: healKeychainOffset(offsetX, offsetXMin, offsetXMax),
+                y: healKeychainOffset(offsetY, offsetYMin, offsetYMax),
+                z: healKeychainOffset(offsetZ, offsetZMin, offsetZMax)
+            }
+        ])
+    );
 }
 
 // Builds the sticker record from GC/inspect data. The record key is the 0-based stack (draw) position
