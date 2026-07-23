@@ -242,12 +242,13 @@ describe("parseCSFloatItemInfo", () => {
             ]
         });
         // Sticker offsets are healed onto the CS2_STICKER_OFFSET_FACTOR (0.0001) grid; keychain
-        // offsets have no published per-model bounds and pass through raw.
+        // offsets get the same treatment on the CS2_KEYCHAIN_OFFSET_FACTOR (0.0001) grid. This
+        // sample sits inside the model's envelope, so only truncation applies.
         expect(result.stickers?.[0]?.x).toBe(-0.0332);
         expect(result.stickers?.[0]?.y).toBe(-0.0012);
-        expect(result.keychains?.[0]?.x).toBeCloseTo(8.631092, 5);
-        expect(result.keychains?.[0]?.y).toBeCloseTo(0.7248813, 5);
-        expect(result.keychains?.[0]?.z).toBeCloseTo(2.1417148, 5);
+        expect(result.keychains?.[0]?.x).toBe(8.631);
+        expect(result.keychains?.[0]?.y).toBe(0.7248);
+        expect(result.keychains?.[0]?.z).toBe(2.1417);
         expect(result.keychains?.[0]?.seed).toBe(47830);
     });
 
