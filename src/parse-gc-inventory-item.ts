@@ -127,10 +127,6 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
     }
 }
 
-// Builds the keychain record from GC/inspect data. Charm placements arrive as raw absolute
-// markup-space floats carrying more precision than cs2-lib stores, so each axis is snapped onto the
-// keychain offset grid and clamped into the model's published envelope — the same treatment sticker
-// offsets already get — otherwise the parsed item fails cs2-lib's keychain validation.
 function parseKeychains(
     economy: CS2EconomyInstance,
     economyItem: CS2EconomyItem,
@@ -157,10 +153,6 @@ function parseKeychains(
     );
 }
 
-// Builds the sticker record from GC/inspect data. The record key is the 0-based stack (draw) position
-// and each sticker's `schema` is its physical StickerMarkup anchor. A GC slot outside the model's
-// [0, getStickerSchemaCount()) is repaired onto the first free anchor — mirroring cs2-lib's loader — so
-// the parsed item always satisfies the sticker validator, matching how offsets are already healed.
 function parseStickers(
     economy: CS2EconomyInstance,
     economyItem: CS2EconomyItem,
@@ -186,11 +178,6 @@ function parseStickers(
 }
 
 function normalizeStickerRotation(rotation: number): number {
-    // Snap onto the half-degree grid, then wrap to the in-game [-180, 180] range; legacy 0–359 and
-    // out-of-range values collapse to the equivalent signed angle (e.g. 270 -> -90, 9999 -> -81,
-    // 359.7 -> -0.5). This deliberately diverges from cs2-lib's healing, which drops
-    // still-out-of-range rotations to undefined — here we wrap-and-preserve so a parsed link keeps
-    // its visual angle.
     const normalized = ((snapStickerRotation(rotation) % 360) + 360) % 360; // [0, 359.5]
     return normalized > CS2_MAX_STICKER_ROTATION ? normalized - 360 : normalized; // [-179.5, 180]
 }
