@@ -8,21 +8,17 @@ import {
     type RecordValue,
     CS2EconomyInstance,
     CS2EconomyItem,
-    CS2_MAX_KEYCHAIN_SEED,
+    CS2_INVENTORY_RULES,
     CS2_MAX_STICKER_ROTATION,
-    CS2_MAX_STICKER_WEAR,
     CS2_MIN_KEYCHAIN_SEED,
     CS2_MIN_SEED,
     CS2_MIN_STICKER_WEAR,
     CS2_MIN_WEAR,
-    CS2_STICKER_WEAR_FACTOR,
     CS2_WEAR_FACTOR,
     assert,
     clamp,
     ensure,
     getNextStickerSchema,
-    healKeychainOffset,
-    healStickerOffset,
     snapStickerRotation,
     truncateToFactor
 } from "@ianlucas/cs2-lib";
@@ -56,19 +52,21 @@ export interface CS2GCInventoryItem {
 export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInventoryItem): CS2BaseInventoryItem {
     const { defindex, paintindex, paintseed, floatvalue, killeatervalue, customname, musicindex, stickers, keychains } =
         data;
-    let economyItem = economy.itemsAsArray.find((item) => item.def === defindex);
+    let economyItem = economy.itemsAsArray.find((item) => item.definitionIndex === defindex);
     if (economyItem !== undefined && CS2_PREVIEW_HAS_STICKERS.includes(economyItem.type)) {
         if (stickers.length === 1) {
             // Patch, Sticker, and Graffiti
             economyItem = economy.itemsAsArray.find(
                 (item) =>
-                    item.def === defindex && item.index === stickers[0].stickerId && item.tint === stickers[0].tintId
+                    item.definitionIndex === defindex &&
+                    item.variantIndex === stickers[0].stickerId &&
+                    item.tintIndex === stickers[0].tintId
             );
         }
         return ensure(economyItem !== undefined ? { id: economyItem.id } : undefined);
     } else if (musicindex !== undefined) {
         // Music Kit
-        economyItem = economy.itemsAsArray.find((item) => item.isMusicKit() && item.index === musicindex);
+        economyItem = economy.itemsAsArray.find((item) => item.isMusicKit() && item.variantIndex === musicindex);
         return ensure(
             economyItem !== undefined ? stripMinValues({ id: economyItem.id, statTrak: killeatervalue }) : undefined
         );
@@ -76,19 +74,20 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
         if (economyItem?.isKeychain() && keychains.length > 0) {
             economyItem = economy.itemsAsArray.find(
                 (item) =>
-                    item.def === defindex &&
-                    item.index === keychains[0].stickerId &&
-                    item.wrappedSticker?.index === keychains[0].wrappedSticker
+                    item.definitionIndex === defindex &&
+                    item.variantIndex === keychains[0].stickerId &&
+                    item.displayedSticker?.variantIndex === keychains[0].wrappedSticker
             );
         } else if (paintindex !== undefined) {
-            economyItem = economy.itemsAsArray.find((item) => item.def === defindex && item.index === paintindex);
+            economyItem = economy.itemsAsArray.find(
+                (item) => item.definitionIndex === defindex && item.variantIndex === paintindex
+            );
         }
         assert(economyItem !== undefined);
         if (economyItem.isKeychain()) {
-            const seed = keychains[0]?.pattern ?? paintseed;
             return stripMinValues({
                 id: economyItem.id,
-                seed: seed !== undefined ? clamp(seed, CS2_MIN_KEYCHAIN_SEED, CS2_MAX_KEYCHAIN_SEED) : undefined
+                seed: CS2_INVENTORY_RULES.keychainSeed.repair(keychains[0]?.pattern ?? paintseed, economyItem)
             });
         }
         return stripMinValues({
@@ -118,7 +117,8 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                           stickers.map(({ slot, stickerId }) => [
                               slot,
                               ensure(
-                                  economy.itemsAsArray.find((item) => item.isPatch() && item.index === stickerId)?.id
+                                  economy.itemsAsArray.find((item) => item.isPatch() && item.variantIndex === stickerId)
+                                      ?.id
                               )
                           ])
                       )
@@ -136,12 +136,6 @@ function parseKeychains(
     economyItem: CS2EconomyItem,
     keychains: CS2GCInventoryItemSticker[]
 ): CS2BaseInventoryItem["keychains"] {
-    const offsetXMin = economyItem.getMinimumKeychainOffsetX();
-    const offsetXMax = economyItem.getMaximumKeychainOffsetX();
-    const offsetYMin = economyItem.getMinimumKeychainOffsetY();
-    const offsetYMax = economyItem.getMaximumKeychainOffsetY();
-    const offsetZMin = economyItem.getMinimumKeychainOffsetZ();
-    const offsetZMax = economyItem.getMaximumKeychainOffsetZ();
     return Object.fromEntries(
         keychains.map(({ offsetX, offsetY, offsetZ, pattern, slot, stickerId, wrappedSticker }) => [
             slot,
@@ -150,14 +144,14 @@ function parseKeychains(
                     economy.itemsAsArray.find(
                         (item) =>
                             item.isKeychain() &&
-                            item.index === stickerId &&
-                            item.wrappedSticker?.index === wrappedSticker
+                            item.variantIndex === stickerId &&
+                            item.displayedSticker?.variantIndex === wrappedSticker
                     )?.id
                 ),
-                seed: pattern !== undefined ? clamp(pattern, CS2_MIN_KEYCHAIN_SEED, CS2_MAX_KEYCHAIN_SEED) : undefined,
-                x: healKeychainOffset(offsetX, offsetXMin, offsetXMax),
-                y: healKeychainOffset(offsetY, offsetYMin, offsetYMax),
-                z: healKeychainOffset(offsetZ, offsetZMin, offsetZMax)
+                seed: CS2_INVENTORY_RULES.keychainSeed.repair(pattern, economyItem),
+                x: CS2_INVENTORY_RULES.keychainPositionX.repair(offsetX, economyItem),
+                y: CS2_INVENTORY_RULES.keychainPositionY.repair(offsetY, economyItem),
+                z: CS2_INVENTORY_RULES.keychainPositionZ.repair(offsetZ, economyItem)
             }
         ])
     );
@@ -173,10 +167,6 @@ function parseStickers(
     stickers: CS2GCInventoryItemSticker[]
 ): CS2BaseInventoryItem["stickers"] {
     const schemaCount = economyItem.getStickerSchemaCount();
-    const offsetXMin = economyItem.getMinimumStickerOffsetX();
-    const offsetXMax = economyItem.getMaximumStickerOffsetX();
-    const offsetYMin = economyItem.getMinimumStickerOffsetY();
-    const offsetYMax = economyItem.getMaximumStickerOffsetY();
     const parsed: RecordValue<CS2BaseInventoryItem["stickers"]>[] = [];
     for (const { slot, stickerId, offsetX, offsetY, wear, rotation } of stickers) {
         let schema = slot ?? parsed.length;
@@ -184,15 +174,12 @@ function parseStickers(
             schema = getNextStickerSchema(parsed, schemaCount);
         }
         parsed.push({
-            id: ensure(economy.itemsAsArray.find((item) => item.isSticker() && item.index === stickerId)?.id),
+            id: ensure(economy.itemsAsArray.find((item) => item.isSticker() && item.variantIndex === stickerId)?.id),
             rotation: rotation !== undefined ? normalizeStickerRotation(rotation) : undefined,
             schema,
-            wear:
-                wear !== undefined
-                    ? clamp(truncateToFactor(wear, CS2_STICKER_WEAR_FACTOR), CS2_MIN_STICKER_WEAR, CS2_MAX_STICKER_WEAR)
-                    : undefined,
-            x: healStickerOffset(offsetX, offsetXMin, offsetXMax),
-            y: healStickerOffset(offsetY, offsetYMin, offsetYMax)
+            wear: CS2_INVENTORY_RULES.stickerWear.repair(wear, economyItem),
+            x: CS2_INVENTORY_RULES.stickerX.repair(offsetX, economyItem),
+            y: CS2_INVENTORY_RULES.stickerY.repair(offsetY, economyItem)
         });
     }
     return Object.fromEntries(parsed.map((sticker, index) => [index, sticker]));

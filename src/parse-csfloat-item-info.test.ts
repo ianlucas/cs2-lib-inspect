@@ -25,8 +25,8 @@ describe("parseCSFloatItemInfo", () => {
     test("economy item (no wear/seed)", () => {
         const item = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(item.def),
-            paintindex: item.index
+            defindex: ensure(item.definitionIndex),
+            paintindex: item.variantIndex
         });
         expect(result.id).toBe(AWP_DRAGON_LORE_ID);
     });
@@ -34,8 +34,8 @@ describe("parseCSFloatItemInfo", () => {
     test("weapon with wear and seed", () => {
         const item = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(item.def),
-            paintindex: item.index,
+            defindex: ensure(item.definitionIndex),
+            paintindex: item.variantIndex,
             floatvalue: 0.5,
             paintseed: 500
         });
@@ -48,11 +48,11 @@ describe("parseCSFloatItemInfo", () => {
         const weapon = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const sticker = CS2Economy.getById(FALLEN_COLOGNE_2015_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(weapon.def),
-            paintindex: weapon.index,
+            defindex: ensure(weapon.definitionIndex),
+            paintindex: weapon.variantIndex,
             stickers: [
-                { slot: 0, stickerId: ensure(sticker.index), wear: 0.1 },
-                { slot: 1, stickerId: ensure(sticker.index), wear: 0.2 }
+                { slot: 0, stickerId: ensure(sticker.variantIndex), wear: 0.1 },
+                { slot: 1, stickerId: ensure(sticker.variantIndex), wear: 0.2 }
             ]
         });
         expect(result.id).toBe(AWP_DRAGON_LORE_ID);
@@ -65,8 +65,8 @@ describe("parseCSFloatItemInfo", () => {
     test("weapon with statTrak", () => {
         const item = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(item.def),
-            paintindex: item.index,
+            defindex: ensure(item.definitionIndex),
+            paintindex: item.variantIndex,
             killeatervalue: 200
         });
         expect(result.id).toBe(AWP_DRAGON_LORE_ID);
@@ -76,8 +76,8 @@ describe("parseCSFloatItemInfo", () => {
     test("weapon with nameTag", () => {
         const item = CS2Economy.getById(AK47_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(item.def),
-            paintindex: item.index,
+            defindex: ensure(item.definitionIndex),
+            paintindex: item.variantIndex,
             customname: "My Gun"
         });
         expect(result.id).toBe(AK47_ID);
@@ -87,8 +87,8 @@ describe("parseCSFloatItemInfo", () => {
     test("melee with wear and seed", () => {
         const item = CS2Economy.getById(KARAMBIT_AUTOTRONIC_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(item.def),
-            paintindex: item.index,
+            defindex: ensure(item.definitionIndex),
+            paintindex: item.variantIndex,
             floatvalue: 0.3,
             paintseed: 100
         });
@@ -100,8 +100,8 @@ describe("parseCSFloatItemInfo", () => {
     test("gloves with wear", () => {
         const item = CS2Economy.getById(BROKEN_FANG_GLOVES_JADE_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(item.def),
-            paintindex: item.index,
+            defindex: ensure(item.definitionIndex),
+            paintindex: item.variantIndex,
             floatvalue: 0.2
         });
         expect(result.id).toBe(BROKEN_FANG_GLOVES_JADE_ID);
@@ -112,8 +112,8 @@ describe("parseCSFloatItemInfo", () => {
         const agent = CS2Economy.getById(BLOODY_DARRYL_THE_STRAPPED_ID);
         const patch = CS2Economy.getById(BLOODHOUND_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(agent.def),
-            stickers: [{ slot: 0, stickerId: ensure(patch.index) }]
+            defindex: ensure(agent.definitionIndex),
+            stickers: [{ slot: 0, stickerId: ensure(patch.variantIndex) }]
         });
         expect(result.id).toBe(BLOODY_DARRYL_THE_STRAPPED_ID);
         expect(result.patches?.[0]).toBe(BLOODHOUND_ID);
@@ -122,8 +122,8 @@ describe("parseCSFloatItemInfo", () => {
     test("keychain economy item", () => {
         const item = CS2Economy.getById(LIL_AVA_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(item.def),
-            keychains: [{ slot: 0, stickerId: ensure(item.index) }]
+            defindex: ensure(item.definitionIndex),
+            keychains: [{ slot: 0, stickerId: ensure(item.variantIndex) }]
         });
         expect(result.id).toBe(LIL_AVA_ID);
     });
@@ -131,8 +131,8 @@ describe("parseCSFloatItemInfo", () => {
     test("sticker economy item", () => {
         const item = CS2Economy.getById(FALLEN_COLOGNE_2015_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(item.def),
-            stickers: [{ slot: 0, stickerId: ensure(item.index), tintId: item.tint }]
+            defindex: ensure(item.definitionIndex),
+            stickers: [{ slot: 0, stickerId: ensure(item.variantIndex), tintId: item.tintIndex }]
         });
         expect(result.id).toBe(FALLEN_COLOGNE_2015_ID);
     });
@@ -141,9 +141,9 @@ describe("parseCSFloatItemInfo", () => {
         const weapon = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const keychain = CS2Economy.getById(LIL_AVA_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(weapon.def),
-            paintindex: weapon.index,
-            keychains: [{ slot: 0, stickerId: ensure(keychain.index), pattern: 2000 }]
+            defindex: ensure(weapon.definitionIndex),
+            paintindex: weapon.variantIndex,
+            keychains: [{ slot: 0, stickerId: ensure(keychain.variantIndex), pattern: 2000 }]
         });
         expect(result.id).toBe(AWP_DRAGON_LORE_ID);
         expect(result.keychains?.[0]?.id).toBe(LIL_AVA_ID);
@@ -153,8 +153,8 @@ describe("parseCSFloatItemInfo", () => {
     test("minimum wear is stripped", () => {
         const item = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(item.def),
-            paintindex: item.index
+            defindex: ensure(item.definitionIndex),
+            paintindex: item.variantIndex
         });
         expect(result.id).toBe(AWP_DRAGON_LORE_ID);
         expect(result.wear).toBeUndefined();
@@ -164,8 +164,8 @@ describe("parseCSFloatItemInfo", () => {
     test("wear is truncated to valid decimal places", () => {
         const item = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(item.def),
-            paintindex: item.index,
+            defindex: ensure(item.definitionIndex),
+            paintindex: item.variantIndex,
             floatvalue: 0.2334222222
         });
         expect(result.wear).toBe(0.233422);
@@ -177,9 +177,9 @@ describe("parseCSFloatItemInfo", () => {
         const weapon = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const sticker = CS2Economy.getById(FALLEN_COLOGNE_2015_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(weapon.def),
-            paintindex: weapon.index,
-            stickers: [{ slot: 0, stickerId: ensure(sticker.index), wear: 0.168 }]
+            defindex: ensure(weapon.definitionIndex),
+            paintindex: weapon.variantIndex,
+            stickers: [{ slot: 0, stickerId: ensure(sticker.variantIndex), wear: 0.168 }]
         });
         expect(result.stickers?.[0]?.wear).toBe(0.16);
         const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
@@ -190,9 +190,9 @@ describe("parseCSFloatItemInfo", () => {
         const weapon = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const sticker = CS2Economy.getById(FALLEN_COLOGNE_2015_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(weapon.def),
-            paintindex: weapon.index,
-            stickers: [{ slot: 0, stickerId: ensure(sticker.index), rotation: 45.7 }]
+            defindex: ensure(weapon.definitionIndex),
+            paintindex: weapon.variantIndex,
+            stickers: [{ slot: 0, stickerId: ensure(sticker.variantIndex), rotation: 45.7 }]
         });
         expect(result.stickers?.[0]?.rotation).toBe(45.5);
         const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
@@ -203,7 +203,7 @@ describe("parseCSFloatItemInfo", () => {
         for (const id of [GUT_KNIFE_BASE_ID, KARAMBIT_BASE_ID]) {
             const item = CS2Economy.getById(id);
             const result = parseCSFloatItemInfo(CS2Economy, {
-                defindex: ensure(item.def),
+                defindex: ensure(item.definitionIndex),
                 floatvalue: 0.5,
                 paintseed: 500
             });
@@ -214,10 +214,12 @@ describe("parseCSFloatItemInfo", () => {
     });
 
     test("sticker and keychain offsets are parsed from snake_case fields", () => {
-        const weapon = ensure(CS2Economy.itemsAsArray.find((item) => item.def === 7 && item.index === 707));
+        const weapon = ensure(
+            CS2Economy.itemsAsArray.find((item) => item.definitionIndex === 7 && item.variantIndex === 707)
+        );
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(weapon.def),
-            paintindex: weapon.index,
+            defindex: ensure(weapon.definitionIndex),
+            paintindex: weapon.variantIndex,
             floatvalue: 0.002643856918439269,
             paintseed: 500,
             stickers: [
@@ -242,7 +244,7 @@ describe("parseCSFloatItemInfo", () => {
             ]
         });
         // Sticker offsets are healed onto the CS2_STICKER_OFFSET_FACTOR (0.0001) grid; keychain
-        // offsets get the same treatment on the CS2_KEYCHAIN_OFFSET_FACTOR (0.0001) grid. This
+        // offsets get the same treatment on the CS2_KEYCHAIN_POSITION_FACTOR (0.0001) grid. This
         // sample sits inside the model's envelope, so only truncation applies.
         expect(result.stickers?.[0]?.x).toBe(-0.0332);
         expect(result.stickers?.[0]?.y).toBe(-0.0012);
@@ -253,15 +255,20 @@ describe("parseCSFloatItemInfo", () => {
     });
 
     test("weapon with sticker slab keychain (wrapped_sticker)", () => {
-        const weapon = ensure(CS2Economy.itemsAsArray.find((item) => item.def === 7 && item.index === 44));
+        const weapon = ensure(
+            CS2Economy.itemsAsArray.find((item) => item.definitionIndex === 7 && item.variantIndex === 44)
+        );
         const stickerSlab = ensure(
             CS2Economy.itemsAsArray.find(
-                (item) => item.def === 1355 && item.index === 37 && item.wrappedSticker?.index === 7249
+                (item) =>
+                    item.definitionIndex === 1355 &&
+                    item.variantIndex === 37 &&
+                    item.displayedSticker?.variantIndex === 7249
             )
         );
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(weapon.def),
-            paintindex: weapon.index,
+            defindex: ensure(weapon.definitionIndex),
+            paintindex: weapon.variantIndex,
             floatvalue: 0.08583386242389679,
             paintseed: 317,
             keychains: [
@@ -282,12 +289,12 @@ describe("parseCSFloatItemInfo", () => {
         const weapon = CS2Economy.getById(AWP_DRAGON_LORE_ID);
         const sticker = CS2Economy.getById(FALLEN_COLOGNE_2015_ID);
         const result = parseCSFloatItemInfo(CS2Economy, {
-            defindex: ensure(weapon.def),
-            paintindex: weapon.index,
+            defindex: ensure(weapon.definitionIndex),
+            paintindex: weapon.variantIndex,
             stickers: [
-                { slot: 1, stickerId: ensure(sticker.index) },
-                { slot: 1, stickerId: ensure(sticker.index) },
-                { slot: 2, stickerId: ensure(sticker.index) }
+                { slot: 1, stickerId: ensure(sticker.variantIndex) },
+                { slot: 1, stickerId: ensure(sticker.variantIndex) },
+                { slot: 2, stickerId: ensure(sticker.variantIndex) }
             ]
         });
         expect(result.stickers?.[0]?.schema).toBe(1);
