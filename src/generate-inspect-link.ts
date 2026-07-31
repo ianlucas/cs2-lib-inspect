@@ -11,19 +11,21 @@ import { CEconItemPreviewDataBlock } from "./Protobufs/cstrike15_gcmessages.js";
 import { floatToBytes } from "./utils.js";
 
 function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBlock {
-    const { def, index, rarity, type, tint } = item;
+    const { definitionIndex, variantIndex, rarityColor, type, tintIndex } = item;
     const hasStickers = CS2_PREVIEW_HAS_STICKERS.includes(type);
     const hasPaintIndex = !hasStickers && !item.isMusicKit();
     const hasKeychains = item.isKeychain();
     return {
-        defindex: def,
-        keychains: hasKeychains ? [{ stickerId: index, slot: 0, wrappedSticker: item.wrappedSticker?.index }] : [],
-        musicindex: item.isMusicKit() ? index : undefined,
-        paintindex: hasPaintIndex ? index : undefined,
+        defindex: definitionIndex,
+        keychains: hasKeychains
+            ? [{ stickerId: variantIndex, slot: 0, wrappedSticker: item.displayedSticker?.variantIndex }]
+            : [],
+        musicindex: item.isMusicKit() ? variantIndex : undefined,
+        paintindex: hasPaintIndex ? variantIndex : undefined,
         paintseed: item.hasSeed() ? CS2_MIN_SEED : undefined,
         paintwear: item.hasWear() ? floatToBytes(item.getMinimumWear()) : undefined,
-        rarity: CS2PreviewRarity[rarity] ?? 0,
-        stickers: hasStickers ? [{ tintId: tint, stickerId: index, slot: 0 }] : []
+        rarity: CS2PreviewRarity[rarityColor] ?? 0,
+        stickers: hasStickers ? [{ tintId: tintIndex, stickerId: variantIndex, slot: 0 }] : []
     };
 }
 
@@ -44,13 +46,13 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                       offsetY: y,
                       rotation,
                       slot: schema ?? slot,
-                      stickerId: item.economy.getById(id).index,
+                      stickerId: item.economy.getById(id).variantIndex,
                       wear: wear ?? CS2_MIN_STICKER_WEAR
                   }))
                 : patches !== undefined
                   ? item
                         .somePatches()
-                        .map(([slot, patchId]) => ({ slot, stickerId: item.economy.getById(patchId).index }))
+                        .map(([slot, patchId]) => ({ slot, stickerId: item.economy.getById(patchId).variantIndex }))
                   : baseAttributes.stickers,
         keychains:
             keychains !== undefined
@@ -62,8 +64,8 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                           offsetZ: z,
                           pattern: seed,
                           slot,
-                          stickerId: keychainItem.index,
-                          wrappedSticker: keychainItem.wrappedSticker?.index
+                          stickerId: keychainItem.variantIndex,
+                          wrappedSticker: keychainItem.displayedSticker?.variantIndex
                       };
                   })
                 : item.isKeychain()

@@ -14,7 +14,8 @@ import {
     CS2_MAX_STICKER_ROTATION,
     CS2_MAX_STICKER_WEAR,
     CS2_MIN_STICKER_ROTATION,
-    CS2_MIN_STICKER_WEAR
+    CS2_MIN_STICKER_WEAR,
+    assertInventoryItem
 } from "@ianlucas/cs2-lib";
 import { english } from "@ianlucas/cs2-lib/translations";
 import { describe, expect, test } from "vitest";
@@ -153,8 +154,8 @@ describe("parseGCInventoryItem sticker offset healing", () => {
                 stickers: [{ slot: 0, stickerId: FALLEN_COLOGNE_STICKER_INDEX, offsetX: 999, offsetY: -999 }]
             })
         );
-        expect(result.stickers?.[0]?.x).toBe(economyItem.getMaximumStickerOffsetX());
-        expect(result.stickers?.[0]?.y).toBe(economyItem.getMinimumStickerOffsetY());
+        expect(result.stickers?.[0]?.x).toBe(economyItem.getStickerOffsetBounds().x.max);
+        expect(result.stickers?.[0]?.y).toBe(economyItem.getStickerOffsetBounds().y.min);
     });
 
     test("healed offsets satisfy cs2-lib validation (inventory.add does not throw)", () => {
@@ -231,8 +232,7 @@ describe("parseGCInventoryItem sticker schema healing", () => {
                 ]
             })
         );
-        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
-        expect(() => inventory.validateBaseInventoryItem(result)).not.toThrow();
+        expect(() => assertInventoryItem(CS2Economy, result)).not.toThrow();
     });
 });
 
@@ -253,12 +253,14 @@ describe("parseGCInventoryItem keychain clamping", () => {
     test("out-of-range keychain item seed is clamped to max", () => {
         const economyItem = CS2Economy.itemsAsArray.find(
             (item) =>
-                item.isKeychain() && item.index === LIL_AVA_KEYCHAIN_INDEX && item.wrappedSticker?.index === undefined
+                item.isKeychain() &&
+                item.variantIndex === LIL_AVA_KEYCHAIN_INDEX &&
+                item.displayedSticker?.variantIndex === undefined
         )!;
         const result = parseGCInventoryItem(
             CS2Economy,
             gcItem({
-                defindex: economyItem.def,
+                defindex: economyItem.definitionIndex,
                 keychains: [{ slot: 0, stickerId: LIL_AVA_KEYCHAIN_INDEX, pattern: 999999 }]
             })
         );
@@ -269,12 +271,14 @@ describe("parseGCInventoryItem keychain clamping", () => {
     test("below-min keychain item seed is clamped then stripped to undefined", () => {
         const economyItem = CS2Economy.itemsAsArray.find(
             (item) =>
-                item.isKeychain() && item.index === LIL_AVA_KEYCHAIN_INDEX && item.wrappedSticker?.index === undefined
+                item.isKeychain() &&
+                item.variantIndex === LIL_AVA_KEYCHAIN_INDEX &&
+                item.displayedSticker?.variantIndex === undefined
         )!;
         const result = parseGCInventoryItem(
             CS2Economy,
             gcItem({
-                defindex: economyItem.def,
+                defindex: economyItem.definitionIndex,
                 keychains: [{ slot: 0, stickerId: LIL_AVA_KEYCHAIN_INDEX, pattern: 0 }]
             })
         );
@@ -295,7 +299,7 @@ describe("parseGCInventoryItem keychain offset healing", () => {
             })
         ).keychains?.[0];
 
-    test("off-grid keychain offset is truncated onto the CS2_KEYCHAIN_OFFSET_FACTOR grid", () => {
+    test("off-grid keychain offset is truncated onto the CS2_KEYCHAIN_POSITION_FACTOR grid", () => {
         // All three axes sit inside the AWP's envelope, so only grid truncation (4 dp) applies.
         const keychain = parseKeychainOffsets({ offsetX: 1.23456789, offsetY: 0.5123456, offsetZ: 5.4321987 });
         expect(keychain?.x).toBe(1.2345);
@@ -309,28 +313,34 @@ describe("parseGCInventoryItem keychain offset healing", () => {
         const economy = new CS2EconomyInstance();
         const items: CS2Item[] = [
             {
-                base: true,
-                def: AWP_DEFINDEX,
-                free: true,
+                definitionIndex: AWP_DEFINDEX,
                 id: 0,
-                keychainOffsetXMax: 41.2865,
-                keychainOffsetXMin: -10.1283,
-                keychainOffsetYMax: 1.3716,
-                keychainOffsetYMin: -0.0176,
-                keychainOffsetZMax: 11.7576,
-                keychainOffsetZMin: 2.6437,
-                rarity: CS2RarityColor.Common,
+                isBase: true,
+                isDefault: true,
+                keychainPositionXMax: 41.2865,
+                keychainPositionXMin: -10.1283,
+                keychainPositionYMax: 1.3716,
+                keychainPositionYMin: -0.0176,
+                keychainPositionZMax: 11.7576,
+                keychainPositionZMin: 2.6437,
+                rarityColor: CS2RarityColor.Common,
                 type: "weapon"
             },
             {
-                baseId: 0,
-                def: AWP_DEFINDEX,
+                definitionIndex: AWP_DEFINDEX,
                 id: 1,
-                index: AWP_PAINTINDEX,
-                rarity: CS2RarityColor.Ancient,
-                type: "weapon"
+                parentId: 0,
+                rarityColor: CS2RarityColor.Ancient,
+                type: "weapon",
+                variantIndex: AWP_PAINTINDEX
             },
-            { def: 1355, id: 2, index: LIL_AVA_KEYCHAIN_INDEX, rarity: CS2RarityColor.Rare, type: "keychain" }
+            {
+                definitionIndex: 1355,
+                id: 2,
+                rarityColor: CS2RarityColor.Rare,
+                type: "keychain",
+                variantIndex: LIL_AVA_KEYCHAIN_INDEX
+            }
         ];
         economy.load({ items, language: { 0: { name: "AWP" }, 1: { name: "AWP | Skin" }, 2: { name: "Charm" } } });
         const parse = (offsets: object) =>

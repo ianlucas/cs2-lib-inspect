@@ -199,15 +199,18 @@ describe("parseInspectLink", () => {
         const link = "csgo_econ_action_preview CFDFCFD704C5EFCFE7CCFFC7A7CFBFCF6DCEC8C7CFDFEAAF668514DB475F";
         const result = parseInspectLink(CS2Economy, link);
         const item = CS2Economy.getById(result.id);
-        expect(item.def).toBe(1355);
-        expect(item.index).toBe(37);
-        expect(item.wrappedSticker?.index).toBeDefined();
+        expect(item.definitionIndex).toBe(1355);
+        expect(item.variantIndex).toBe(37);
+        expect(item.displayedSticker?.variantIndex).toBeDefined();
     });
 
     test("standalone sticker slab roundtrip (generate → parse → same id)", () => {
         const stickerSlab = ensure(
             CS2Economy.itemsAsArray.find(
-                (item) => item.def === 1355 && item.index === 37 && item.wrappedSticker?.index !== undefined
+                (item) =>
+                    item.definitionIndex === 1355 &&
+                    item.variantIndex === 37 &&
+                    item.displayedSticker?.variantIndex !== undefined
             )
         );
         const link = generateInspectLink(stickerSlab);
@@ -222,15 +225,18 @@ describe("parseInspectLink", () => {
         const keychainId = result.keychains?.[0]?.id;
         expect(keychainId).toBeDefined();
         const keychainItem = CS2Economy.getById(ensure(keychainId));
-        expect(keychainItem.def).toBe(1355);
-        expect(keychainItem.index).toBe(37);
-        expect(keychainItem.wrappedSticker?.index).toBeDefined();
+        expect(keychainItem.definitionIndex).toBe(1355);
+        expect(keychainItem.variantIndex).toBe(37);
+        expect(keychainItem.displayedSticker?.variantIndex).toBeDefined();
     });
 
     test("weapon with sticker slab keychain roundtrip", () => {
         const stickerSlab = ensure(
             CS2Economy.itemsAsArray.find(
-                (item) => item.def === 1355 && item.index === 37 && item.wrappedSticker?.index === 7249
+                (item) =>
+                    item.definitionIndex === 1355 &&
+                    item.variantIndex === 37 &&
+                    item.displayedSticker?.variantIndex === 7249
             )
         );
         const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });

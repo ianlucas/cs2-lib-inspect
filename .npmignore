@@ -1,9 +1,12 @@
-.git
-.github
 .claude
 .codex
+.git
+.github
 .gitignore
+.npmignore
 .prettierignore
 .prettierrc
+/docs
 /src
+tsconfig.build.json
 tsconfig.json
