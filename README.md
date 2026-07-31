@@ -8,8 +8,6 @@
 npm install @ianlucas/cs2-lib-inspect
 ```
 
-`@ianlucas/cs2-lib` v9 is a peer dependency and must be installed alongside it.
-
 ## Usage
 
 ```typescript
@@ -25,5 +23,3 @@ const link = generateInspectLink(CS2Economy.getById(307));
 const item = parseInspectLink(CS2Economy, link);
 //=> { id: 307, ... }
 ```
-
-`parseCSFloatItemInfo(CS2Economy, itemInfo)` does the same for a CSFloat item info payload.
