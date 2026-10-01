@@ -45,13 +45,28 @@ export interface CS2GCInventoryItem {
     killeatervalue?: number;
     customname?: string;
     musicindex?: number;
+    petindex?: number;
+    style?: number;
     stickers: CS2GCInventoryItemSticker[];
     keychains: CS2GCInventoryItemSticker[];
+    variations?: CS2GCInventoryItemSticker[];
 }
 
 export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInventoryItem): CS2BaseInventoryItem {
-    const { defindex, paintindex, paintseed, floatvalue, killeatervalue, customname, musicindex, stickers, keychains } =
-        data;
+    const {
+        defindex,
+        paintindex,
+        paintseed,
+        floatvalue,
+        killeatervalue,
+        customname,
+        musicindex,
+        petindex,
+        style,
+        stickers,
+        keychains,
+        variations
+    } = data;
     let economyItem = economy.itemsAsArray.find((item) => item.definitionIndex === defindex);
     if (economyItem !== undefined && CS2_PREVIEW_HAS_STICKERS.includes(economyItem.type)) {
         if (stickers.length === 1) {
@@ -78,12 +93,22 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                     item.variantIndex === keychains[0].stickerId &&
                     item.displayedSticker?.variantIndex === keychains[0].wrappedSticker
             );
+        } else if (economyItem?.isPet()) {
+            economyItem = economy.itemsAsArray.find((item) => item.isPet() && item.variantIndex === petindex);
         } else if (paintindex !== undefined) {
             economyItem = economy.itemsAsArray.find(
                 (item) => item.definitionIndex === defindex && item.variantIndex === paintindex
             );
         }
         assert(economyItem !== undefined);
+        if (economyItem.isPet()) {
+            return stripMinValues({
+                id: economyItem.id,
+                seed: CS2_INVENTORY_RULES.itemSeed.repair(parsePetSeed(variations ?? []), economyItem),
+                style: CS2_INVENTORY_RULES.itemStyle.repair(style, economyItem),
+                nameTag: economyItem.hasNameTag() ? customname : undefined
+            });
+        }
         if (economyItem.isKeychain()) {
             return stripMinValues({
                 id: economyItem.id,
@@ -125,6 +150,11 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                     : undefined
         });
     }
+}
+
+// The game takes a pet's seed from the pattern of a variation, the last one set winning.
+function parsePetSeed(variations: CS2GCInventoryItemSticker[]): number | undefined {
+    return variations.reduce<number | undefined>((seed, { pattern }) => pattern || seed, undefined);
 }
 
 function parseKeychains(

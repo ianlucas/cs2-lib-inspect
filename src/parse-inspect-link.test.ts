@@ -12,9 +12,13 @@ import {
     ensure
 } from "@ianlucas/cs2-lib";
 import { english } from "@ianlucas/cs2-lib/translations";
+import { Buffer } from "buffer";
+import CRC32 from "crc-32";
 import { describe, expect, test } from "vitest";
+import { CS2_PREVIEW_COMMAND } from "./constants.js";
 import { generateInspectLink } from "./generate-inspect-link.js";
 import { isSteamInspectLink, parseInspectLink } from "./parse-inspect-link.js";
+import { CEconItemPreviewDataBlock } from "./Protobufs/cstrike15_gcmessages.js";
 
 const AWP_DRAGON_LORE_ID = 307;
 const AK47_ID = 4;
@@ -24,12 +28,30 @@ const LIL_AVA_ID = 13113;
 const BLOODY_DARRYL_THE_STRAPPED_ID = 8657;
 const FALLEN_COLOGNE_2015_ID = 2226;
 const BLOODHOUND_ID = 8569;
+const PET_EGG_ID = 28161;
+const PET_CHICK_ID = 28162;
+const PET_CATALANA_ID = 28163;
+const PET_SILKIE_ID = 28164;
+const PET_POLISH_ID = 28165;
+const CHICKEN_EGG_TOOL_ID = 28166;
+const CHICKEN_FEED_TOOL_ID = 28167;
+const PET_DEFINDEX = 4681;
 
 CS2Economy.load({ items: CS2_ITEMS, language: english });
 
 function roundtrip(item: Parameters<typeof generateInspectLink>[0]) {
     const link = generateInspectLink(item);
     return parseInspectLink(CS2Economy, link);
+}
+
+// Encodes a block the way the game does, for the shapes the generator never writes.
+function link(block: Partial<CEconItemPreviewDataBlock>) {
+    const binary = CEconItemPreviewDataBlock.toBinary(CEconItemPreviewDataBlock.create(block));
+    const payload = Buffer.concat([Uint8Array.from([0]), binary]);
+    const crc = CRC32.buf(payload);
+    const checksum = Buffer.alloc(4);
+    checksum.writeUInt32BE((((crc & 0xffff) ^ (binary.byteLength * crc)) & 0xffffffff) >>> 0, 0);
+    return `${CS2_PREVIEW_COMMAND}${Buffer.concat([payload, checksum]).toString("hex").toUpperCase()}`;
 }
 
 describe("parseInspectLink", () => {
@@ -259,6 +281,100 @@ describe("parseInspectLink", () => {
                 expect(sticker.rotation).toBeLessThanOrEqual(CS2_MAX_STICKER_ROTATION);
             }
         }
+    });
+});
+
+describe("parseInspectLink pets", () => {
+    function pet(item: Parameters<CS2Inventory["add"]>[0]) {
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        inventory.add(item);
+        return roundtrip(inventory.get(0));
+    }
+
+    test("every pet survives a roundtrip as itself", () => {
+        for (const id of [PET_EGG_ID, PET_CHICK_ID, PET_CATALANA_ID, PET_SILKIE_ID, PET_POLISH_ID]) {
+            expect(roundtrip(CS2Economy.getById(id))).toEqual({ id });
+        }
+    });
+
+    test("pet with seed and style", () => {
+        expect(pet({ id: PET_POLISH_ID, seed: 4242, style: 12 })).toEqual({ id: PET_POLISH_ID, seed: 4242, style: 12 });
+    });
+
+    test("egg and chick keep their seed", () => {
+        expect(pet({ id: PET_EGG_ID, seed: 99999 })).toEqual({ id: PET_EGG_ID, seed: 99999 });
+        expect(pet({ id: PET_CHICK_ID, seed: 77 })).toEqual({ id: PET_CHICK_ID, seed: 77 });
+    });
+
+    test("pet with a name", () => {
+        expect(pet({ id: PET_CATALANA_ID, nameTag: "Henrietta" }).nameTag).toBe("Henrietta");
+    });
+
+    test("the chicken tools roundtrip", () => {
+        expect(roundtrip(CS2Economy.getById(CHICKEN_EGG_TOOL_ID))).toEqual({ id: CHICKEN_EGG_TOOL_ID });
+        expect(roundtrip(CS2Economy.getById(CHICKEN_FEED_TOOL_ID))).toEqual({ id: CHICKEN_FEED_TOOL_ID });
+    });
+
+    test("a pet as the game writes it: hatch date beside the seed, default style as 0", () => {
+        const result = parseInspectLink(
+            CS2Economy,
+            link({
+                defindex: PET_DEFINDEX,
+                petindex: 4,
+                style: 0,
+                upgradeLevel: 3,
+                petFoodExpirationDate: 1790000000,
+                variations: [{ pattern: 31337, tintId: 1780000000 }]
+            })
+        );
+        expect(result).toEqual({ id: PET_SILKIE_ID, seed: 31337 });
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        expect(() => inventory.add(result)).not.toThrow();
+    });
+
+    test("a style the breed does not have is dropped", () => {
+        const result = parseInspectLink(CS2Economy, link({ defindex: PET_DEFINDEX, petindex: 4, style: 10 }));
+        expect(result).toEqual({ id: PET_SILKIE_ID });
+    });
+
+    test("a style on a pet with one look is dropped", () => {
+        const result = parseInspectLink(CS2Economy, link({ defindex: PET_DEFINDEX, petindex: 2, style: 1 }));
+        expect(result).toEqual({ id: PET_CHICK_ID });
+    });
+
+    test("an out-of-range pet seed is clamped", () => {
+        const result = parseInspectLink(
+            CS2Economy,
+            link({ defindex: PET_DEFINDEX, petindex: 3, variations: [{ pattern: 4000000 }] })
+        );
+        expect(result.seed).toBe(CS2Economy.getById(PET_CATALANA_ID).getMaximumSeed());
+    });
+
+    test("a pullet is read as its breed", () => {
+        const result = parseInspectLink(CS2Economy, link({ defindex: PET_DEFINDEX, petindex: 5, upgradeLevel: 2 }));
+        expect(result).toEqual({ id: PET_POLISH_ID });
+    });
+
+    test("an unknown pet index throws", () => {
+        expect(() => parseInspectLink(CS2Economy, link({ defindex: PET_DEFINDEX, petindex: 99 }))).toThrow();
+        expect(() => parseInspectLink(CS2Economy, link({ defindex: PET_DEFINDEX }))).toThrow();
+    });
+
+    test("the name shown is the last life stage's", () => {
+        const names = (customnames: string[]) =>
+            parseInspectLink(CS2Economy, link({ defindex: PET_DEFINDEX, petindex: 3, customnames })).nameTag;
+        expect(names(["Chick", "Pullet", "Hen"])).toBe("Hen");
+        expect(names(["Chick", "Pullet"])).toBe("Pullet");
+        expect(names(["Chick", "", ""])).toBe("Chick");
+        expect(names([])).toBeUndefined();
+    });
+
+    test("an egg takes no name", () => {
+        const result = parseInspectLink(
+            CS2Economy,
+            link({ defindex: PET_DEFINDEX, petindex: 1, customnames: ["Egg"] })
+        );
+        expect(result).toEqual({ id: PET_EGG_ID });
     });
 });
 

@@ -49,6 +49,14 @@ function parseHex(hexString: string): CEconItemPreviewDataBlock {
     return CEconItemPreviewDataBlock.fromBinary(attributesData);
 }
 
+// An item holds up to three names (a pet keeps one per life stage) and the game shows the last one set.
+function parseCustomName(customnames: string[]): string | undefined {
+    return customnames
+        .slice(0, 3)
+        .reverse()
+        .find((customname) => customname !== "");
+}
+
 export function parseInspectLink(economy: CS2EconomyInstance, inspectLink: string): CS2BaseInventoryItem {
     const hex = isCommandInspect(inspectLink)
         ? inspectLink.replace(CS2_PREVIEW_COMMAND, "")
@@ -60,9 +68,12 @@ export function parseInspectLink(economy: CS2EconomyInstance, inspectLink: strin
         paintseed: attributes.paintseed,
         floatvalue: attributes.paintwear !== undefined ? bytesToFloat(attributes.paintwear) : undefined,
         killeatervalue: attributes.killeatervalue,
-        customname: attributes.customname,
+        customname: parseCustomName(attributes.customnames),
         musicindex: attributes.musicindex,
+        petindex: attributes.petindex,
+        style: attributes.style,
         stickers: attributes.stickers,
-        keychains: attributes.keychains
+        keychains: attributes.keychains,
+        variations: attributes.variations
     });
 }

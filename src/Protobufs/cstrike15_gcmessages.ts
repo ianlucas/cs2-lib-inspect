@@ -57,9 +57,9 @@ export interface CEconItemPreviewDataBlock {
      */
     killeatervalue?: number;
     /**
-     * @generated from protobuf field: optional string customname = 11
+     * @generated from protobuf field: repeated string customnames = 11
      */
-    customname?: string;
+    customnames: string[];
     /**
      * @generated from protobuf field: repeated CEconItemPreviewDataBlock.Sticker stickers = 12
      */
@@ -96,6 +96,26 @@ export interface CEconItemPreviewDataBlock {
      * @generated from protobuf field: repeated CEconItemPreviewDataBlock.Sticker keychains = 20
      */
     keychains: CEconItemPreviewDataBlock_Sticker[];
+    /**
+     * @generated from protobuf field: optional uint32 style = 21
+     */
+    style?: number;
+    /**
+     * @generated from protobuf field: repeated CEconItemPreviewDataBlock.Sticker variations = 22
+     */
+    variations: CEconItemPreviewDataBlock_Sticker[];
+    /**
+     * @generated from protobuf field: optional uint32 upgrade_level = 23
+     */
+    upgradeLevel?: number;
+    /**
+     * @generated from protobuf field: optional uint32 pet_food_expiration_date = 24
+     */
+    petFoodExpirationDate?: number;
+    /**
+     * @generated from protobuf field: optional bytes blobdata = 25
+     */
+    blobdata?: Uint8Array;
 }
 /**
  * @generated from protobuf message CEconItemPreviewDataBlock.Sticker
@@ -164,7 +184,7 @@ class CEconItemPreviewDataBlock$Type extends MessageType<CEconItemPreviewDataBlo
             { no: 8, name: "paintseed", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ },
             { no: 9, name: "killeaterscoretype", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ },
             { no: 10, name: "killeatervalue", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ },
-            { no: 11, name: "customname", kind: "scalar", opt: true, T: 9 /*ScalarType.STRING*/ },
+            { no: 11, name: "customnames", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ },
             { no: 12, name: "stickers", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => CEconItemPreviewDataBlock_Sticker },
             { no: 13, name: "inventory", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ },
             { no: 14, name: "origin", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ },
@@ -173,13 +193,20 @@ class CEconItemPreviewDataBlock$Type extends MessageType<CEconItemPreviewDataBlo
             { no: 17, name: "musicindex", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ },
             { no: 18, name: "entindex", kind: "scalar", opt: true, T: 5 /*ScalarType.INT32*/ },
             { no: 19, name: "petindex", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ },
-            { no: 20, name: "keychains", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => CEconItemPreviewDataBlock_Sticker }
+            { no: 20, name: "keychains", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => CEconItemPreviewDataBlock_Sticker },
+            { no: 21, name: "style", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ },
+            { no: 22, name: "variations", kind: "message", repeat: 2 /*RepeatType.UNPACKED*/, T: () => CEconItemPreviewDataBlock_Sticker },
+            { no: 23, name: "upgrade_level", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ },
+            { no: 24, name: "pet_food_expiration_date", kind: "scalar", opt: true, T: 13 /*ScalarType.UINT32*/ },
+            { no: 25, name: "blobdata", kind: "scalar", opt: true, T: 12 /*ScalarType.BYTES*/ }
         ]);
     }
     create(value?: PartialMessage<CEconItemPreviewDataBlock>): CEconItemPreviewDataBlock {
         const message = globalThis.Object.create((this.messagePrototype!));
+        message.customnames = [];
         message.stickers = [];
         message.keychains = [];
+        message.variations = [];
         if (value !== undefined)
             reflectionMergePartial<CEconItemPreviewDataBlock>(this, message, value);
         return message;
@@ -219,8 +246,8 @@ class CEconItemPreviewDataBlock$Type extends MessageType<CEconItemPreviewDataBlo
                 case /* optional uint32 killeatervalue */ 10:
                     message.killeatervalue = reader.uint32();
                     break;
-                case /* optional string customname */ 11:
-                    message.customname = reader.string();
+                case /* repeated string customnames */ 11:
+                    message.customnames.push(reader.string());
                     break;
                 case /* repeated CEconItemPreviewDataBlock.Sticker stickers */ 12:
                     message.stickers.push(CEconItemPreviewDataBlock_Sticker.internalBinaryRead(reader, reader.uint32(), options));
@@ -248,6 +275,21 @@ class CEconItemPreviewDataBlock$Type extends MessageType<CEconItemPreviewDataBlo
                     break;
                 case /* repeated CEconItemPreviewDataBlock.Sticker keychains */ 20:
                     message.keychains.push(CEconItemPreviewDataBlock_Sticker.internalBinaryRead(reader, reader.uint32(), options));
+                    break;
+                case /* optional uint32 style */ 21:
+                    message.style = reader.uint32();
+                    break;
+                case /* repeated CEconItemPreviewDataBlock.Sticker variations */ 22:
+                    message.variations.push(CEconItemPreviewDataBlock_Sticker.internalBinaryRead(reader, reader.uint32(), options));
+                    break;
+                case /* optional uint32 upgrade_level */ 23:
+                    message.upgradeLevel = reader.uint32();
+                    break;
+                case /* optional uint32 pet_food_expiration_date */ 24:
+                    message.petFoodExpirationDate = reader.uint32();
+                    break;
+                case /* optional bytes blobdata */ 25:
+                    message.blobdata = reader.bytes();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -291,9 +333,9 @@ class CEconItemPreviewDataBlock$Type extends MessageType<CEconItemPreviewDataBlo
         /* optional uint32 killeatervalue = 10; */
         if (message.killeatervalue !== undefined)
             writer.tag(10, WireType.Varint).uint32(message.killeatervalue);
-        /* optional string customname = 11; */
-        if (message.customname !== undefined)
-            writer.tag(11, WireType.LengthDelimited).string(message.customname);
+        /* repeated string customnames = 11; */
+        for (let i = 0; i < message.customnames.length; i++)
+            writer.tag(11, WireType.LengthDelimited).string(message.customnames[i]);
         /* repeated CEconItemPreviewDataBlock.Sticker stickers = 12; */
         for (let i = 0; i < message.stickers.length; i++)
             CEconItemPreviewDataBlock_Sticker.internalBinaryWrite(message.stickers[i], writer.tag(12, WireType.LengthDelimited).fork(), options).join();
@@ -321,6 +363,21 @@ class CEconItemPreviewDataBlock$Type extends MessageType<CEconItemPreviewDataBlo
         /* repeated CEconItemPreviewDataBlock.Sticker keychains = 20; */
         for (let i = 0; i < message.keychains.length; i++)
             CEconItemPreviewDataBlock_Sticker.internalBinaryWrite(message.keychains[i], writer.tag(20, WireType.LengthDelimited).fork(), options).join();
+        /* optional uint32 style = 21; */
+        if (message.style !== undefined)
+            writer.tag(21, WireType.Varint).uint32(message.style);
+        /* repeated CEconItemPreviewDataBlock.Sticker variations = 22; */
+        for (let i = 0; i < message.variations.length; i++)
+            CEconItemPreviewDataBlock_Sticker.internalBinaryWrite(message.variations[i], writer.tag(22, WireType.LengthDelimited).fork(), options).join();
+        /* optional uint32 upgrade_level = 23; */
+        if (message.upgradeLevel !== undefined)
+            writer.tag(23, WireType.Varint).uint32(message.upgradeLevel);
+        /* optional uint32 pet_food_expiration_date = 24; */
+        if (message.petFoodExpirationDate !== undefined)
+            writer.tag(24, WireType.Varint).uint32(message.petFoodExpirationDate);
+        /* optional bytes blobdata = 25; */
+        if (message.blobdata !== undefined)
+            writer.tag(25, WireType.LengthDelimited).bytes(message.blobdata);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
