@@ -47,6 +47,7 @@ export interface CS2GCInventoryItem {
     musicindex?: number;
     petindex?: number;
     style?: number;
+    upgradelevel?: number;
     stickers: CS2GCInventoryItemSticker[];
     keychains: CS2GCInventoryItemSticker[];
     variations?: CS2GCInventoryItemSticker[];
@@ -63,6 +64,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
         musicindex,
         petindex,
         style,
+        upgradelevel,
         stickers,
         keychains,
         variations
@@ -106,6 +108,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                 id: economyItem.id,
                 seed: CS2_INVENTORY_RULES.itemSeed.repair(parsePetSeed(variations ?? []), economyItem),
                 style: CS2_INVENTORY_RULES.itemStyle.repair(style, economyItem),
+                upgradeLevel: parsePetUpgradeLevel(upgradelevel, economyItem),
                 nameTag: economyItem.hasNameTag() ? customname : undefined
             });
         }
@@ -155,6 +158,12 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
 // The game takes a pet's seed from the pattern of a variation, the last one set winning.
 function parsePetSeed(variations: CS2GCInventoryItemSticker[]): number | undefined {
     return variations.reduce<number | undefined>((seed, { pattern }) => pattern || seed, undefined);
+}
+
+// The level a pet is at by default is left unset, the way a minimum seed is.
+function parsePetUpgradeLevel(upgradeLevel: number | undefined, economyItem: CS2EconomyItem): number | undefined {
+    const repaired = CS2_INVENTORY_RULES.itemUpgradeLevel.repair(upgradeLevel, economyItem);
+    return repaired === economyItem.getDefaultUpgradeLevel() ? undefined : repaired;
 }
 
 function parseKeychains(

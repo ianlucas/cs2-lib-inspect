@@ -6,28 +6,9 @@
 import { CS2EconomyItem, CS2InventoryItem, CS2_MIN_SEED, CS2_MIN_STICKER_WEAR } from "@ianlucas/cs2-lib";
 import { Buffer } from "buffer";
 import CRC32 from "crc-32";
-import {
-    CS2PreviewRarity,
-    CS2_PREVIEW_COMMAND,
-    CS2_PREVIEW_HAS_STICKERS,
-    CS2_PREVIEW_PET_CHICK_INDEX,
-    CS2_PREVIEW_PET_CHICK_UPGRADE_LEVEL,
-    CS2_PREVIEW_PET_EGG_UPGRADE_LEVEL,
-    CS2_PREVIEW_PET_HEN_UPGRADE_LEVEL,
-    CS2_PREVIEW_URL
-} from "./constants.js";
+import { CS2PreviewRarity, CS2_PREVIEW_COMMAND, CS2_PREVIEW_HAS_STICKERS, CS2_PREVIEW_URL } from "./constants.js";
 import { CEconItemPreviewDataBlock } from "./Protobufs/cstrike15_gcmessages.js";
 import { floatToBytes } from "./utils.js";
-
-// A breed is always its full-grown hen; the egg and the chick are pets of their own.
-function getPetUpgradeLevel(item: CS2EconomyItem) {
-    if (item.isPetEgg()) {
-        return CS2_PREVIEW_PET_EGG_UPGRADE_LEVEL;
-    }
-    return item.variantIndex === CS2_PREVIEW_PET_CHICK_INDEX
-        ? CS2_PREVIEW_PET_CHICK_UPGRADE_LEVEL
-        : CS2_PREVIEW_PET_HEN_UPGRADE_LEVEL;
-}
 
 function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBlock {
     const { definitionIndex, variantIndex, rarityColor, type, tintIndex } = item;
@@ -48,7 +29,7 @@ function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBl
         petindex: isPet ? variantIndex : undefined,
         rarity: CS2PreviewRarity[rarityColor] ?? 0,
         stickers: hasStickers ? [{ tintId: tintIndex, stickerId: variantIndex, slot: 0 }] : [],
-        upgradeLevel: isPet ? getPetUpgradeLevel(item) : undefined,
+        upgradeLevel: item.getDefaultUpgradeLevel(),
         // A pet's seed is not a paint seed: the game carries it as the pattern of a variation.
         variations: isPet ? [{ pattern: item.getMinimumSeed() }] : []
     };
@@ -65,6 +46,7 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
         paintseed: baseAttributes.paintseed !== undefined ? (seed ?? CS2_MIN_SEED) : undefined,
         paintwear: item.hasWear() ? floatToBytes(item.getWear()) : undefined,
         style,
+        upgradeLevel: item.getUpgradeLevel(),
         variations: baseAttributes.variations.map(({ pattern }) => ({ pattern: seed ?? pattern })),
         stickers:
             stickers !== undefined

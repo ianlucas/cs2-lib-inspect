@@ -64,6 +64,16 @@ describe("generateInspectLink pets", () => {
         expect(decode(generateInspectLink(CS2Economy.getById(PET_SILKIE_ID))).upgradeLevel).toBe(3);
     });
 
+    test("a breed is sent at the level it was given, a hen otherwise", () => {
+        const level = (item: Parameters<CS2Inventory["add"]>[0]) =>
+            decode(generateInspectLink(inventoryItem(item))).upgradeLevel;
+        expect(level({ id: PET_CATALANA_ID, upgradeLevel: 2 })).toBe(2);
+        expect(level({ id: PET_CATALANA_ID, upgradeLevel: 3 })).toBe(3);
+        expect(level({ id: PET_CATALANA_ID })).toBe(3);
+        expect(level({ id: PET_EGG_ID })).toBe(0);
+        expect(level({ id: PET_CHICK_ID })).toBe(1);
+    });
+
     test("a pet's name is the first custom name", () => {
         const block = decode(generateInspectLink(inventoryItem({ id: PET_CHICK_ID, nameTag: "Henrietta" })));
         expect(block.customnames).toEqual(["Henrietta"]);

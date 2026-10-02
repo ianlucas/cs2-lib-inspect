@@ -40,11 +40,5 @@ export const CS2_PREVIEW_ATTRIBUTELESS_ITEMS: CS2ItemType[] = [
     CS2ItemType.MusicKit
 ];
 
-// The game reads a pet's life stage from `upgrade_level`: 0 egg, 1 chick, 2 pullet, 3 hen.
-export const CS2_PREVIEW_PET_CHICK_INDEX = 2;
-export const CS2_PREVIEW_PET_EGG_UPGRADE_LEVEL = 0;
-export const CS2_PREVIEW_PET_CHICK_UPGRADE_LEVEL = 1;
-export const CS2_PREVIEW_PET_HEN_UPGRADE_LEVEL = 3;
-
 export const CS2_PREVIEW_URL = "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20";
 export const CS2_PREVIEW_COMMAND = "csgo_econ_action_preview ";

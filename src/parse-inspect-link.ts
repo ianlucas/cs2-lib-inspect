@@ -72,6 +72,7 @@ export function parseInspectLink(economy: CS2EconomyInstance, inspectLink: strin
         musicindex: attributes.musicindex,
         petindex: attributes.petindex,
         style: attributes.style,
+        upgradelevel: attributes.upgradeLevel,
         stickers: attributes.stickers,
         keychains: attributes.keychains,
         variations: attributes.variations

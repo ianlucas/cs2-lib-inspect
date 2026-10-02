@@ -350,9 +350,25 @@ describe("parseInspectLink pets", () => {
         expect(result.seed).toBe(CS2Economy.getById(PET_CATALANA_ID).getMaximumSeed());
     });
 
-    test("a pullet is read as its breed", () => {
+    test("a pullet is read as its breed at that level", () => {
         const result = parseInspectLink(CS2Economy, link({ defindex: PET_DEFINDEX, petindex: 5, upgradeLevel: 2 }));
-        expect(result).toEqual({ id: PET_POLISH_ID });
+        expect(result).toEqual({ id: PET_POLISH_ID, upgradeLevel: 2 });
+        const inventory = new CS2Inventory({ maxItems: 4, storageUnitMaxItems: 4 });
+        expect(() => inventory.add(result)).not.toThrow();
+    });
+
+    test("a pullet survives a roundtrip and a hen is left unset", () => {
+        expect(pet({ id: PET_CATALANA_ID, upgradeLevel: 2 })).toEqual({ id: PET_CATALANA_ID, upgradeLevel: 2 });
+        expect(pet({ id: PET_CATALANA_ID, upgradeLevel: 3 })).toEqual({ id: PET_CATALANA_ID });
+    });
+
+    test("an upgrade level the pet does not allow is dropped", () => {
+        const level = (petindex: number, upgradeLevel: number) =>
+            parseInspectLink(CS2Economy, link({ defindex: PET_DEFINDEX, petindex, upgradeLevel })).upgradeLevel;
+        expect(level(4, 1)).toBeUndefined();
+        expect(level(4, 9)).toBeUndefined();
+        expect(level(2, 3)).toBeUndefined();
+        expect(level(1, 2)).toBeUndefined();
     });
 
     test("an unknown pet index throws", () => {
