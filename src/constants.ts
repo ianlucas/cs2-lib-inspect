@@ -28,6 +28,7 @@ export const CS2_PREVIEW_INSPECTABLE_ITEMS: CS2ItemType[] = [
     CS2ItemType.Melee,
     CS2ItemType.MusicKit,
     CS2ItemType.Patch,
+    CS2ItemType.Pet,
     CS2ItemType.Sticker,
     CS2ItemType.Weapon
 ];

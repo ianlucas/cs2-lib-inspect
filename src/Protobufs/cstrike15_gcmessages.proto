@@ -28,7 +28,7 @@ message CEconItemPreviewDataBlock {
 	optional uint32 paintseed = 8;
 	optional uint32 killeaterscoretype = 9;
 	optional uint32 killeatervalue = 10;
-	optional string customname = 11;
+	repeated string customnames = 11;
 	repeated .CEconItemPreviewDataBlock.Sticker stickers = 12;
 	optional uint32 inventory = 13;
 	optional uint32 origin = 14;
@@ -38,4 +38,9 @@ message CEconItemPreviewDataBlock {
 	optional int32 entindex = 18;
 	optional uint32 petindex = 19;
 	repeated .CEconItemPreviewDataBlock.Sticker keychains = 20;
+	optional uint32 style = 21;
+	repeated .CEconItemPreviewDataBlock.Sticker variations = 22;
+	optional uint32 upgrade_level = 23;
+	optional uint32 pet_food_expiration_date = 24;
+	optional bytes blobdata = 25;
 }

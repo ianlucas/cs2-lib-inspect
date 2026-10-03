@@ -13,32 +13,41 @@ import { floatToBytes } from "./utils.js";
 function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBlock {
     const { definitionIndex, variantIndex, rarityColor, type, tintIndex } = item;
     const hasStickers = CS2_PREVIEW_HAS_STICKERS.includes(type);
-    const hasPaintIndex = !hasStickers && !item.isMusicKit();
+    const isPet = item.isPet();
+    const hasPaintIndex = !hasStickers && !item.isMusicKit() && !isPet;
     const hasKeychains = item.isKeychain();
     return {
+        customnames: [],
         defindex: definitionIndex,
         keychains: hasKeychains
             ? [{ stickerId: variantIndex, slot: 0, wrappedSticker: item.displayedSticker?.variantIndex }]
             : [],
         musicindex: item.isMusicKit() ? variantIndex : undefined,
         paintindex: hasPaintIndex ? variantIndex : undefined,
-        paintseed: item.hasSeed() ? CS2_MIN_SEED : undefined,
+        paintseed: item.hasSeed() && !isPet ? CS2_MIN_SEED : undefined,
         paintwear: item.hasWear() ? floatToBytes(item.getMinimumWear()) : undefined,
+        petindex: isPet ? variantIndex : undefined,
         rarity: CS2PreviewRarity[rarityColor] ?? 0,
-        stickers: hasStickers ? [{ tintId: tintIndex, stickerId: variantIndex, slot: 0 }] : []
+        stickers: hasStickers ? [{ tintId: tintIndex, stickerId: variantIndex, slot: 0 }] : [],
+        upgradeLevel: item.getDefaultUpgradeLevel(),
+        // A pet's seed is not a paint seed: the game carries it as the pattern of a variation.
+        variations: isPet ? [{ pattern: item.getMinimumSeed() }] : []
     };
 }
 
 function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDataBlock {
-    const { nameTag, seed, statTrak, stickers, patches, keychains } = item;
+    const { nameTag, seed, statTrak, stickers, style, patches, keychains } = item;
     const baseAttributes = getEconomyItemPreviewData(item);
     return {
         ...baseAttributes,
-        customname: nameTag,
+        customnames: nameTag !== undefined ? [nameTag] : [],
         killeaterscoretype: statTrak !== undefined ? 0 : undefined,
         killeatervalue: statTrak,
-        paintseed: item.hasSeed() ? (seed ?? CS2_MIN_SEED) : undefined,
+        paintseed: baseAttributes.paintseed !== undefined ? (seed ?? CS2_MIN_SEED) : undefined,
         paintwear: item.hasWear() ? floatToBytes(item.getWear()) : undefined,
+        style,
+        upgradeLevel: item.getUpgradeLevel(),
+        variations: baseAttributes.variations.map(({ pattern }) => ({ pattern: seed ?? pattern })),
         stickers:
             stickers !== undefined
                 ? item.someStickers().map(([slot, { id, wear, rotation, x, y, schema }]) => ({
