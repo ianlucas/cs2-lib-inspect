@@ -3,10 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CS2EconomyItem, CS2InventoryItem, CS2_MIN_SEED, CS2_MIN_STICKER_WEAR } from "@ianlucas/cs2-lib";
+import {
+    CS2EconomyInstance,
+    CS2EconomyItem,
+    CS2InventoryItem,
+    CS2_MIN_SEED,
+    CS2_MIN_STICKER_WEAR
+} from "@ianlucas/cs2-lib";
 import { Buffer } from "buffer";
 import CRC32 from "crc-32";
-import { CS2PreviewRarity, CS2_PREVIEW_COMMAND, CS2_PREVIEW_HAS_STICKERS, CS2_PREVIEW_URL } from "./constants.js";
+import {
+    CS2PreviewRarity,
+    CS2_PREVIEW_COMMAND,
+    CS2_PREVIEW_HAS_STICKERS,
+    CS2_PREVIEW_SOUVENIR_QUALITY,
+    CS2_PREVIEW_URL
+} from "./constants.js";
 import { CEconItemPreviewDataBlock } from "./Protobufs/cstrike15_gcmessages.js";
 import { floatToBytes } from "./utils.js";
 
@@ -35,8 +47,12 @@ function getEconomyItemPreviewData(item: CS2EconomyItem): CEconItemPreviewDataBl
     };
 }
 
+function getHighlightReel(economy: CS2EconomyInstance, highlight: number | undefined): number | undefined {
+    return highlight !== undefined ? economy.getById(highlight).variantIndex : undefined;
+}
+
 function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDataBlock {
-    const { nameTag, seed, statTrak, stickers, style, patches, keychains } = item;
+    const { highlight, nameTag, seed, souvenir, statTrak, stickers, style, patches, keychains } = item;
     const baseAttributes = getEconomyItemPreviewData(item);
     return {
         ...baseAttributes,
@@ -45,6 +61,7 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
         killeatervalue: statTrak,
         paintseed: baseAttributes.paintseed !== undefined ? (seed ?? CS2_MIN_SEED) : undefined,
         paintwear: item.hasWear() ? floatToBytes(item.getWear()) : undefined,
+        quality: souvenir === true ? CS2_PREVIEW_SOUVENIR_QUALITY : undefined,
         style,
         upgradeLevel: item.getUpgradeLevel(),
         variations: baseAttributes.variations.map(({ pattern }) => ({ pattern: seed ?? pattern })),
@@ -65,9 +82,10 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                   : baseAttributes.stickers,
         keychains:
             keychains !== undefined
-                ? item.someKeychains().map(([slot, { id, x, y, z, seed }]) => {
+                ? item.someKeychains().map(([slot, { highlight, id, x, y, z, seed }]) => {
                       const keychainItem = item.economy.getById(id);
                       return {
+                          highlightReel: getHighlightReel(item.economy, highlight),
                           offsetX: x,
                           offsetY: y,
                           offsetZ: z,
@@ -79,6 +97,7 @@ function getInventoryItemPreviewData(item: CS2InventoryItem): CEconItemPreviewDa
                   })
                 : item.isKeychain()
                   ? baseAttributes.keychains.map((keychain) => {
+                        keychain.highlightReel = getHighlightReel(item.economy, highlight);
                         keychain.pattern = seed;
                         return keychain;
                     })

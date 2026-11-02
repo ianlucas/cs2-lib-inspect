@@ -40,5 +40,7 @@ export const CS2_PREVIEW_ATTRIBUTELESS_ITEMS: CS2ItemType[] = [
     CS2ItemType.MusicKit
 ];
 
+export const CS2_PREVIEW_SOUVENIR_QUALITY = 12;
+
 export const CS2_PREVIEW_URL = "steam://rungame/730/76561202255233023/+csgo_econ_action_preview%20";
 export const CS2_PREVIEW_COMMAND = "csgo_econ_action_preview ";
