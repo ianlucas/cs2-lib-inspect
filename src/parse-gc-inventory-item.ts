@@ -16,15 +16,17 @@ import {
     CS2_MIN_WEAR,
     CS2_WEAR_FACTOR,
     assert,
+    checkSouvenir,
     clamp,
     ensure,
     getNextStickerSchema,
     snapStickerRotation,
     truncateToFactor
 } from "@ianlucas/cs2-lib";
-import { CS2_PREVIEW_HAS_STICKERS } from "./constants.js";
+import { CS2_PREVIEW_HAS_STICKERS, CS2_PREVIEW_SOUVENIR_QUALITY } from "./constants.js";
 
 export interface CS2GCInventoryItemSticker {
+    highlightReel?: number;
     slot?: number;
     stickerId?: number;
     wear?: number;
@@ -46,6 +48,7 @@ export interface CS2GCInventoryItem {
     customname?: string;
     musicindex?: number;
     petindex?: number;
+    quality?: number;
     style?: number;
     upgradelevel?: number;
     stickers: CS2GCInventoryItemSticker[];
@@ -63,6 +66,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
         customname,
         musicindex,
         petindex,
+        quality,
         style,
         upgradelevel,
         stickers,
@@ -115,10 +119,13 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
         if (economyItem.isKeychain()) {
             return stripMinValues({
                 id: economyItem.id,
-                seed: CS2_INVENTORY_RULES.keychainSeed.repair(keychains[0]?.pattern ?? paintseed, economyItem)
+                highlight: parseHighlight(economyItem, keychains[0]?.highlightReel),
+                seed: economyItem.hasSeed()
+                    ? CS2_INVENTORY_RULES.keychainSeed.repair(keychains[0]?.pattern ?? paintseed, economyItem)
+                    : undefined
             });
         }
-        return stripMinValues({
+        const item = stripMinValues({
             id: economyItem.id,
             seed: economyItem.hasSeed() ? paintseed : undefined,
             wear:
@@ -130,6 +137,7 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                       )
                     : undefined,
             statTrak: economyItem.hasStatTrak() ? killeatervalue : undefined,
+            souvenir: quality === CS2_PREVIEW_SOUVENIR_QUALITY ? true : undefined,
             nameTag: economyItem.hasNameTag() ? customname : undefined,
             keychains:
                 economyItem.hasKeychains() && keychains.length > 0
@@ -152,6 +160,10 @@ export function parseGCInventoryItem(economy: CS2EconomyInstance, data: CS2GCInv
                       )
                     : undefined
         });
+        if (!checkSouvenir(item, economyItem)) {
+            item.souvenir = undefined;
+        }
+        return item;
     }
 }
 
@@ -172,24 +184,37 @@ function parseKeychains(
     keychains: CS2GCInventoryItemSticker[]
 ): CS2BaseInventoryItem["keychains"] {
     return Object.fromEntries(
-        keychains.map(({ offsetX, offsetY, offsetZ, pattern, slot, stickerId, wrappedSticker }) => [
-            slot,
-            {
-                id: ensure(
-                    economy.itemsAsArray.find(
-                        (item) =>
-                            item.isKeychain() &&
-                            item.variantIndex === stickerId &&
-                            item.displayedSticker?.variantIndex === wrappedSticker
-                    )?.id
-                ),
-                seed: CS2_INVENTORY_RULES.keychainSeed.repair(pattern, economyItem),
-                x: CS2_INVENTORY_RULES.keychainPositionX.repair(offsetX, economyItem),
-                y: CS2_INVENTORY_RULES.keychainPositionY.repair(offsetY, economyItem),
-                z: CS2_INVENTORY_RULES.keychainPositionZ.repair(offsetZ, economyItem)
-            }
-        ])
+        keychains.map(({ highlightReel, offsetX, offsetY, offsetZ, pattern, slot, stickerId, wrappedSticker }) => {
+            const keychain = ensure(
+                economy.itemsAsArray.find(
+                    (item) =>
+                        item.isKeychain() &&
+                        item.variantIndex === stickerId &&
+                        item.displayedSticker?.variantIndex === wrappedSticker
+                )
+            );
+            return [
+                slot,
+                {
+                    highlight: parseHighlight(keychain, highlightReel),
+                    id: keychain.id,
+                    seed: keychain.hasSeed()
+                        ? CS2_INVENTORY_RULES.keychainSeed.repair(pattern, economyItem)
+                        : undefined,
+                    x: CS2_INVENTORY_RULES.keychainPositionX.repair(offsetX, economyItem),
+                    y: CS2_INVENTORY_RULES.keychainPositionY.repair(offsetY, economyItem),
+                    z: CS2_INVENTORY_RULES.keychainPositionZ.repair(offsetZ, economyItem)
+                }
+            ];
+        })
     );
+}
+
+function parseHighlight(keychain: CS2EconomyItem, highlightReel: number | undefined): number | undefined {
+    if (highlightReel === undefined || !keychain.hasHighlights()) {
+        return undefined;
+    }
+    return ensure(keychain.getHighlights().find((highlight) => highlight.variantIndex === highlightReel)).id;
 }
 
 function parseStickers(
